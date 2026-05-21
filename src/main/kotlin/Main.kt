@@ -1,16 +1,49 @@
-package org.example
+package com.prosoft.webinar01.homework
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 fun main() {
-    val name = "Kotlin"
-    //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-    // to see how IntelliJ IDEA suggests fixing it.
-    println("Hello, " + name + "!")
+    // --- ОСНОВНАЯ ЗАДАЧА ----
 
-    for (i in 1..5) {
-        //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-        // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-        println("i = $i")
-    }
+    // Вывод строки приветствия пользователя библиотеки
+    println("")
+    println("Добро пожаловать в библиотеку!")
+
+    // Вывод карточки первой книги
+    val author: String = "Фёдор Достоевский"
+    val title: String = "Преступление и наказание"
+    val year: Int = 1866
+    val pages: Int = 672
+    val price: Double = 1234.56
+    val quantity: Int = 20
+
+    println("")
+    println("""
+        |=== КАРТОЧКА КНИГИ ===
+        |Название:     $title
+        |Автор:        $author
+        |Год издания:  $year
+        |Кол-во стран: $pages
+        |Цена:         $price руб.
+        |В наличии:    $quantity шт.
+        |=====================
+    """.trimMargin())
+
+    // --- БОНУСНАЯ ЗАДАЧА ---
+    showLiterals()
+}
+
+fun showLiterals() {
+
+    val million = 1_000_000
+    val hex = 0xCAFE
+    val binary = 0b1010_1010
+    val scientific = 1.5e3
+
+    println("")
+    println("""
+    БОНУСНАЯ ЗАДАЧА:
+    Десятичная с подчёркиваниями: 1_000_000 = $million
+    Шестнадцатеричная: 0xCAFE = $hex
+    Двоичная: 0b1010_1010 = $binary
+    Научная нотация: 1.5e3 = $scientific
+""".trimIndent())
 }
