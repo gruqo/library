@@ -1,49 +1,52 @@
-package com.prosoft.webinar01.homework
+package com.prosoft.webinar02.homework
 
 fun main() {
-    // --- ОСНОВНАЯ ЗАДАЧА ----
+    println("Добро пожаловать в библиотеку!\n")
 
-    // Вывод строки приветствия пользователя библиотеки
-    println("")
-    println("Добро пожаловать в библиотеку!")
+    print("Введите название книги: ")
+    val title = readln()
 
-    // Вывод карточки первой книги
-    val author: String = "Фёдор Достоевский"
-    val title: String = "Преступление и наказание"
-    val year: Int = 1866
-    val pages: Int = 672
-    val price: Double = 1234.56
-    val quantity: Int = 20
+    print("Введите автора: ")
+    val author = readln()
 
-    println("")
-    println("""
-        |=== КАРТОЧКА КНИГИ ===
-        |Название:     $title
-        |Автор:        $author
-        |Год издания:  $year
-        |Кол-во стран: $pages
-        |Цена:         $price руб.
-        |В наличии:    $quantity шт.
-        |=====================
-    """.trimMargin())
+    print("Введите год издания: ")
+    val year = readln().toInt()
 
-    // --- БОНУСНАЯ ЗАДАЧА ---
-    showLiterals()
-}
+    print("Введите количество страниц: ")
+    val pages = readln().toInt()
 
-fun showLiterals() {
+    print("Введите цену (руб.): ")
+    val price = readln().toDouble()
 
-    val million = 1_000_000
-    val hex = 0xCAFE
-    val binary = 0b1010_1010
-    val scientific = 1.5e3
+    print("Введите количество экземпляров: ")
+    val copiesInStock = readln().toInt()
 
-    println("")
-    println("""
-    БОНУСНАЯ ЗАДАЧА:
-    Десятичная с подчёркиваниями: 1_000_000 = $million
-    Шестнадцатеричная: 0xCAFE = $hex
-    Двоичная: 0b1010_1010 = $binary
-    Научная нотация: 1.5e3 = $scientific
-""".trimIndent())
+    //  Учёт выдач
+    var totalLoans: Int = 0
+    var currentlyOnHand: Int = 0
+
+    fun printCart() {
+        println("""
+        
+            |=== КАРТОЧКА КНИГИ ===
+            |Название:                  $title
+            |Автор:                     $author
+            |Год издания:               $year
+            |Кол-во страниц:            $pages
+            |Цена:                      ${"%.2f".format(price)} руб.
+            |В наличии:                 $copiesInStock шт.
+            |Общая стоимость на складе: ${"%.2f".format(price * copiesInStock)} руб.
+            |
+            |---------------------
+            |
+            | Выдача №1: всего выдач ${++totalLoans}, на руках ${++currentlyOnHand}, на полке ${copiesInStock - currentlyOnHand}
+            | Выдача №2: всего выдач ${++totalLoans}, на руках ${++currentlyOnHand}, на полке ${copiesInStock - currentlyOnHand}
+            | Выдача №3: всего выдач ${++totalLoans}, на руках ${++currentlyOnHand}, на полке ${copiesInStock - currentlyOnHand}
+            | Возврат:   всего выдач ${totalLoans}, на руках ${--currentlyOnHand}, на полке ${copiesInStock - currentlyOnHand}
+            |
+            |=====================
+        """.trimMargin())
+    }
+
+    printCart()
 }
