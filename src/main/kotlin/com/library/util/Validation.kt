@@ -1,49 +1,4 @@
-package main
-
-// ========== INPUT ==========
-fun bookInput(): List<Any?>? {
-
-    print("Введите название книги: ")
-    val titleInput = readln()
-
-    print("Введите автора: ")
-    val authorInput = readln().split(" ")
-
-    print("Введите язык оригинала (Enter если оригинал на русском): ")
-    val originalLanguage = readln().ifBlank { null }
-
-    print("Введите переводчика: ")
-    val translator = readln().ifBlank { null }
-
-    print("Введите номер издания: ")
-    val edition = readln().toIntOrNull()
-
-    print("Введите год издания: ")
-    val yearInput = readln().toIntOrNull()
-        ?: return null.also { println("Ошибка: год должен быть числом\n") }
-    val year = yearInput.toUShort()
-
-    print("Введите количество страниц: ")
-    val pagesInput = readln().toUShortOrNull()
-        ?: return null.also { println("Ошибка: количество страниц должно быть числом\n") }
-
-    print("Введите цену (руб.): ")
-    val priceInput = readln().toDoubleOrNull()
-        ?: return null.also { println("Ошибка: цена должна быть числом\n") }
-
-    print("Введите количество экземпляров: ")
-    val copiesInStockInput = readln().toIntOrNull()
-    if (copiesInStockInput == null) { println("Ошибка: количество экземпляров должно быть числом\n"); return null }
-
-    print("Введите ISBN: ")
-    val rawIsbn = readln()
-    val cleaned = isbnClean(rawIsbn)
-
-    println( describeIsbn(cleaned))
-    val isbnInput = if (cleaned.isNotBlank() && isbnValidate(cleaned)) rawIsbn else null
-
-    return listOf(titleInput, authorInput, originalLanguage, translator, edition, year, pagesInput, priceInput, copiesInStockInput, isbnInput)
-}
+package com.library.util
 
 // ========== TITLE ==========
 const val TITLE_SIMBOL_MAX = 30
@@ -129,7 +84,6 @@ fun  describeIsbn(isbn: String?): String{
     return "Длина ${isbn.length}, GS1 префикс ${isbn.substring(0, 3)}"
 }
 
-
 // ========== VALIDATION ==========
 //  978-0-13-468599-1         ISBN валиден
 //  978-5-17-118363-2         ISBN невалиден
@@ -158,71 +112,4 @@ fun bookValidate(
         errors.add("ISBN не валиден:\n   Очищенный: $cleaned\n   Длина: $lenM (${cleaned.length}/$ISBN_13_QUANTITY)\n   Цифры: $digM\n   Сумма цифр: $digitSum")
     }
     return errors
-}
-
-// ========== OUTPUT ==========
-fun bookPrint(
-    title: String, author: String, language: String?, translator: String?, edition: Int?, year: UShort, pages: UShort, price: Double,
-    copies: Int, isbn: String?
-) {
-    println(
-        """
-        |
-        |=== КАРТОЧКА КНИГИ ===
-        |Название:                  $title
-        |Автор:                     $author
-        |Год издания:               $year
-        |Кол-во страниц:            $pages (${pageCategorize(pages)})
-        |Цена:                      ${priceFormat(price)}
-        |В наличии:                 $copies шт.
-        |Общая стоимость на складе: ${priceFormat(price * copies)}
-    """.trimMargin()
-    )
-
-    language?.let { println("Язык оригинала:            $it") }
-    translator?.let { println("Переводчик:                $it") }
-    edition?.let { println("Издание:                   $it") }
-    isbn?.let { println("ISBN:                      $it") }
-
-    println(
-        """
-        |
-        |$SINGLE_MARKER_ACCESS Книга успешно добавлена!
-        |======================
-    """.trimMargin()
-    )
-}
-
-fun main() {
-    println("Добро пожаловать в библиотеку!\n")
-    var bookValid = false
-    while (!bookValid) {
-        val book = bookInput() ?: continue
-        val title = book[0] as String
-        @Suppress("UNCHECKED_CAST")
-        val authorParts = book[1] as List<String>
-        val language = book[2] as String?
-        val translator = book[3] as String?
-        val edition = book[4] as Int?
-        val year = book[5] as UShort
-        val pages = book[6] as UShort
-        val price = book[7] as Double
-        val copies = book[8] as Int
-        val isbn = book[9] as String?
-        val errors = bookValidate(title, authorParts, year, pages, price, copies,  isbn)
-        if (errors.isNotEmpty()) {
-            println("\n\u26a0\ufe0f ИНФОРМАЦИЯ О КНИГЕ СОДЕРЖИТ НЕВЕРНЫЕ ДАННЫЕ:")
-            errors.forEach { println("   $it") }
-            println("\n\ud83d\udd01 Пожалуйста, введите данные заново...\n")
-            continue
-        }
-        val authorName = authorSplit(authorParts.joinToString(" "))
-        val shortTitle = titleShort(title)
-
-        bookPrint(shortTitle, authorName, language, translator, edition, year, pages, price, copies, isbn)
-
-        println("\n--- Симуляция выдачи ---")
-        println("\n ${simulateLoans(copies, 3)}\n")
-        bookValid = true
-    }
 }
