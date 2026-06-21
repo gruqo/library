@@ -2,6 +2,7 @@ package com.library.model
 
 import com.library.util.pageCategorize
 import com.library.util.priceFormat
+import com.library.util.SINGLE_MARKER_ACCESS
 
 class Book(
     val title: String,
@@ -65,34 +66,11 @@ class Book(
             |Общая стоимость на складе: ${priceFormat(price * copiesInStock)}
         """.trimMargin()
         )
+        originalLanguage?.let { println("Язык оригинала:            $it") }
+        translator?.let { println("Переводчик:                $it") }
+        edition?.let { println("Издание:                   $it") }
+        isbn?.let { println("ISBN:                      $it") }
+        println("$SINGLE_MARKER_ACCESS Книга успешно добавлена!")
+        println("======================")
     }
 }
-
-
-//Домашнее задание 2/5
-//Задача 2. Методы класса
-//Перенесите в класс методы, которые работают с книгой:class Book(...) {
-//    // ... поля и init ...
-//    val isAvailable: Boolean
-//        get() = copiesInStock > 0
-//    val shortTitle: String
-//        get() = if (title.length > 30) title.take(27) + "..." else title
-//    fun lend(): Boolean {
-//        if (copiesInStock <= 0) return false
-//        copiesInStock--
-//        totalLoans++
-//        return true
-//    }
-//    fun returnCopy() {
-//        copiesInStock++
-//    }
-//    fun printCard(withFancyFrame: Boolean = false) {
-//// тот же вывод, что и раньше, но теперь использует поля this
-//    }
-//}
-//Обратите внимание:
-//❑ isAvailable и shortTitle — это свойства с кастомным геттером, не методы. Считаются «на лету».
-//❑ lend()/returnCopy() — команды, меняющие состояние. Они могут это делать,
-// потому что находятся внутри класса (где private set не запрет).
-// ❑ printCard() — печать, использует поля через this (или просто по имени, this опционален).
-
