@@ -4,55 +4,55 @@ import com.library.util.pageCategorize
 import com.library.util.priceFormat
 import com.library.util.SINGLE_MARKER_ACCESS
 
-class Book(
+abstract class Book(
     val title: String,
     val author: String,
     val year: UShort,
     val pages: UShort,
-    val price: Double,
+    val price: Money,
     initialCopies: Int,
     val isbn: String? = null,
     val edition: Int? = null,
     val originalLanguage: String? = null,
-    val translator: String? = null
-) {
+    val translator: String? = null,
+    val genre: Genre = Genre.OTHER
+) : Loanable {
     var copiesInStock: Int = initialCopies
-        private set // менять можно только изнутри класса
+        protected set // менять можно только изнутри класса
     var totalLoans: Int = 0
-        private set
+        protected set
+
+    companion object {
+        const val MIN_YEAR = 1450
+        const val MAX_YEAR = 2100
+        fun isValidYear(year: Int): Boolean = year in MIN_YEAR..MAX_YEAR
+    }
+
+    abstract val category: String
+
     init {
         require(title.isNotBlank()) { "Название не может быть пустым" }
-        require(year in 1450u..2100u) { "Год $year вне допустимого диапазона" }
-        require(pages > 0u) { "Страниц должно быть положительно, а не $pages" }
-        require(price >= 0) { "Цена не может быть отрицательной" }
+        require(Book.isValidYear(year.toInt())) { "Год $year вне диапазона" }
+        require(pages >= 0u.toUShort()) { "Страниц должно быть положительно, а не $pages" }
+        require(price.amount >= 0) { "Цена не может быть отрицательной" }
         require(initialCopies >= 0) { "Количество экземпляров не может быть отрицательным" }
     }
 
-    constructor(
-        title: String, author: String, year: Int, pages: Int, price: Double, copies: Int
-    ) : this(
-        title, author, year.toUShort(), pages.toUShort(), price, copies,
-        isbn = null, edition = null, originalLanguage = null, translator = null
-    )
-
-    val isAvailable: Boolean
+    override val isAvailable: Boolean
         get() = copiesInStock > 0
 
-    val shortTitle: String
-        get() = if (title.length > 30) title.take(27) + "..." else title
-
-    fun lend(): Boolean {
-        if (copiesInStock <= 0) return false
+    override fun lend(): LoanResult {
+        if (copiesInStock <= 0) return LoanResult.NotAvailable(0)
         copiesInStock--
         totalLoans++
-        return true
+        return LoanResult.Success
     }
 
-    fun returnCopy() {
+    override fun returnCopy() {
         copiesInStock++
     }
 
-    fun printCard(withFancyFrame: Boolean = false) {
+    open fun printCard() {
         println(
                 """
             |
@@ -61,11 +61,12 @@ class Book(
             |Автор:                     $author
             |Год издания:               $year
             |Кол-во страниц:            $pages (${pageCategorize(pages)})
-            |Цена:                      ${priceFormat(price)}
+            |Цена:                      ${priceFormat(price.amount)}
             |В наличии:                 $copiesInStock шт.
-            |Общая стоимость на складе: ${priceFormat(price * copiesInStock)}
+            |Общая стоимость на складе: ${priceFormat(price.amount * copiesInStock)}
         """.trimMargin()
         )
+        println("Жанр:            ${genre.emoji} ${genre.displayName}")
         originalLanguage?.let { println("Язык оригинала:            $it") }
         translator?.let { println("Переводчик:                $it") }
         edition?.let { println("Издание:                   $it") }
@@ -74,3 +75,4 @@ class Book(
         println("======================")
     }
 }
+

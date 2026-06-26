@@ -1,6 +1,8 @@
 package com.library.io
 
 import com.library.model.Book
+import com.library.model.Money
+import com.library.model.PrintedBook
 import com.library.util.describeIsbn
 import com.library.util.isbnClean
 import com.library.util.isbnValidate
@@ -47,16 +49,12 @@ fun readBookData(): Book? {
     println( describeIsbn(cleaned))
     val isbnInput = if (cleaned.isNotBlank() && isbnValidate(cleaned)) rawIsbn else null
 
-    return Book(
+    return PrintedBook(
         title = titleInput,
         author = authorInput,
         year = year,
         pages = pagesInput,
-        price = priceInput,
-        initialCopies = copiesInStockInput,
-        isbn = isbnInput,
-        edition = edition,
-        originalLanguage = originalLanguage,
-        translator = translator
+        price = Money(priceInput),
+        copies = copiesInStockInput
     )
 }
