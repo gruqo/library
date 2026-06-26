@@ -6,7 +6,7 @@ import com.library.util.priceFormat
 
 fun printCard(
     title: String, author: String, language: String?, translator: String?, edition: Int?, year: UShort, pages: UShort, price: Double,
-    copies: Int, isbn: String?
+    copies: Int, isbn: String?, tags: Set<String>
 ) {
     println(
         """
@@ -26,6 +26,8 @@ fun printCard(
     translator?.let { println("Переводчик:                $it") }
     edition?.let { println("Издание:                   $it") }
     isbn?.let { println("ISBN:                      $it") }
+
+    if (tags.isNotEmpty()) println("Тэги:                      ${tags.joinToString(", ")}")
 
     println(
         """

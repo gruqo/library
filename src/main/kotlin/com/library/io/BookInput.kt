@@ -1,6 +1,9 @@
 package com.library.io
 
 import com.library.model.Book
+import com.library.model.Genre
+import com.library.model.Money
+import com.library.model.PrintedBook
 import com.library.util.describeIsbn
 import com.library.util.isbnClean
 import com.library.util.isbnValidate
@@ -24,12 +27,11 @@ fun readBookData(): Book? {
     val edition = readln().toIntOrNull()
 
     print("Введите год издания: ")
-    val yearInput = readln().toIntOrNull()
+    val year = readln().toIntOrNull()
         ?: return null.also { println("Ошибка: год должен быть числом\n") }
-    val year = yearInput.toUShort()
 
     print("Введите количество страниц: ")
-    val pagesInput = readln().toUShortOrNull()
+    val pagesInput = readln().toIntOrNull()
         ?: return null.also { println("Ошибка: количество страниц должно быть числом\n") }
 
     print("Введите цену (руб.): ")
@@ -47,16 +49,25 @@ fun readBookData(): Book? {
     println( describeIsbn(cleaned))
     val isbnInput = if (cleaned.isNotBlank() && isbnValidate(cleaned)) rawIsbn else null
 
-    return Book(
+    print("Введите жанр: ")
+    val genreInput = Genre.fromString(readln())
+
+    print("Введите теги через запятую (или Enter для пропуска): ")
+    val tagsInput = readln()
+        .split(",")
+        .map { it.trim() }
+        .filter { it.isNotBlank() }
+        .toSet()
+
+    return PrintedBook(
         title = titleInput,
         author = authorInput,
         year = year,
         pages = pagesInput,
-        price = priceInput,
-        initialCopies = copiesInStockInput,
+        price = Money(priceInput),
+        copies = copiesInStockInput,
         isbn = isbnInput,
-        edition = edition,
-        originalLanguage = originalLanguage,
-        translator = translator
+        genre = genreInput,
+        tags = tagsInput
     )
 }
