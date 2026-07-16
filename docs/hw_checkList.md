@@ -14,7 +14,7 @@
 | 08 | 1.abstract Book<br>2.Три подкласса<br>3.Loanable<br>4.Полиморфный сценарий | ✓ | [09](https://github.com/gruqo/library/pull/9) |   |
 | 09 | 1.enum Genre<br>2.sealed LoanResult<br>3.data Money<br>4.object Registry<br>5.companion | ✓ | [10](https://github.com/gruqo/library/pull/10) |   |
 | 10 | 1.Library<br>2.Тэги Set<br>3.ISBN Map<br>4.Map<Genre, List><br>5.Полки-массив<br>6.main() | ✓ | [11](https://github.com/gruqo/library/pull/11)) |   |
-| 11 | 1.Предикаты/фильтры<br>2.filterIsInstance<br>3.Группировка<br>4.fold<br>5.Comparable<br>6.ArrayDeque |  | [XX]() |   |
+| 11 | 1.Предикаты/фильтры<br>2.filterIsInstance<br>3.Группировка<br>4.fold<br>5.Comparable<br>6.ArrayDeque | ✓ | [12](https://github.com/gruqo/library/pull/12)) |   |
 | 12 | 1.Функции как параметры<br>2.Function references<br>3.Scope‑функции — каждая по разу<br>4.Чистый scope‑function кейс: ?.let<br>5.Высшего порядка: «передать что делать» |   | [XX]() |   |
 | 13 |  |  | [XX]() |   |
 | 14 |  |  | [XX]() |   |
