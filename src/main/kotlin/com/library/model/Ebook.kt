@@ -29,8 +29,4 @@ class EBook(
     override fun returnCopy() {
     }
 
-    override fun printCard() {
-        super.printCard()
-        println("Формат: $format, $sizeMb MB")
-    }
 }

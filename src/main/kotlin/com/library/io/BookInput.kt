@@ -6,7 +6,7 @@ import com.library.model.Money
 import com.library.model.PrintedBook
 import com.library.util.describeIsbn
 import com.library.util.isbnClean
-import com.library.util.isbnValidate
+import com.library.util.isValidChecksum
 
 fun readBookData(): Book? {
     println("Добро пожаловать в библиотеку!\n")
@@ -47,7 +47,7 @@ fun readBookData(): Book? {
     val cleaned = isbnClean(rawIsbn)
 
     println( describeIsbn(cleaned))
-    val isbnInput = if (cleaned.isNotBlank() && isbnValidate(cleaned)) rawIsbn else null
+    val isbnInput = if (cleaned.isNotBlank() && isValidChecksum(cleaned)) rawIsbn else null
 
     print("Введите жанр: ")
     val genreInput = Genre.fromString(readln())

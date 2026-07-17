@@ -1,8 +1,11 @@
 package com.library.model
 
+import java.io.StringWriter
+import com.library.error.*
+
 class Library(val name: String, rows: Int = 5, cols: Int = 5) {
-    private val books: MutableList<Book> = mutableListOf()
-    private val byIsbn = mutableMapOf<String, Book>()
+    internal val books: MutableList<Book> = mutableListOf()
+    internal val byIsbn = mutableMapOf<String, Book>()
 
     private val reservationQueue: ArrayDeque<Pair<String, Book>> = ArrayDeque()
     fun reserve(userName: String, book: Book) {
@@ -14,19 +17,27 @@ class Library(val name: String, rows: Int = 5, cols: Int = 5) {
 
 
     fun addBook(book: Book) {
-        books.add(book)
         book.isbn?.let { isbn ->
-            require(isbn !in byIsbn) { "Книга с ISBN $isbn уже есть в каталоге" }
-            byIsbn[isbn] = book
-        }
+            if (isbn in byIsbn) throw BookAlreadyExistsException(isbn) }
+        books.add(book)
+        book.isbn?.let { byIsbn[it] = book }
     }
 
     fun findByIsbn(isbn: String): Book? = byIsbn[isbn]
     fun hasIsbn(isbn: String): Boolean = isbn in byIsbn
 
+    fun getByIsbn(isbn: String): Book =
+        byIsbn[isbn] ?: throw BookNotFoundException(isbn)
+
+    fun lendOrThrow(book: Book) {
+        when (val result = book.lend()) {
+            is LoanResult.Success -> { /* ok */ }is LoanResult.NotAvailable -> throw NotAvailableException(book.title) else -> error("Unexpected result: $result")
+        }
+    }
+
     fun removeBook(book: Book): Boolean = books.remove(book)
     val size: Int get() = books.size
-    fun all(): List<Book> = books.toList() // возвращаем КОПИЮ как read-only
+    fun all(): List<Book> = books.toList()
     override fun toString(): String = "Библиотека «$name» ($size книг)"
 
 
@@ -44,7 +55,7 @@ class Library(val name: String, rows: Int = 5, cols: Int = 5) {
     fun printShelves() {
         for ((rowIdx, row) in shelves.withIndex()) {
             print("Ряд $rowIdx: ")
-            for (cell in row) print(if (cell == null) ". " else "□ ")
+            for (cell in row) print(if (cell == null) ".%-8s".format("") else "%-8s".format(cell.take(8)))
             println()
         }
     }
@@ -96,5 +107,13 @@ class Library(val name: String, rows: Int = 5, cols: Int = 5) {
     }
 
     fun <R> mapBooks(transform: (Book) -> R): List<R> = books.map(transform)
+
+    fun exportToString(): String = StringWriter().use { writer ->
+        writer.write("# Каталог: $name\n")
+        for (book in all()) {
+            writer.write("${book.isbn ?: "no-isbn"}\t${book.title}\t${book.author}\t${book.year}\n")
+        }
+        writer.toString()
+   }
 
 }

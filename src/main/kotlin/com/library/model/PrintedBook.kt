@@ -23,8 +23,4 @@ class PrintedBook(
 
     override val category = "Печатная книга"
     init { require(pages > 0u) { "Страниц должно быть положительно" } }
-    override fun printCard() {
-        super.printCard()
-        println("Страниц: $pages")
-    }
 }

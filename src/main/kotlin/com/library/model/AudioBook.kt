@@ -13,10 +13,4 @@ class AudioBook(
         durationMinutes = durationMinutes, narrator = narrator, initialCopies = initialCopies)
 
     override val category = "Аудиокнига"
-    override fun printCard() {
-        super.printCard()
-        val hours = durationMinutes / 60
-        val mins = durationMinutes % 60
-        println("Длительность: ${hours}ч ${mins}мин, читает $narrator")
-    }
 }

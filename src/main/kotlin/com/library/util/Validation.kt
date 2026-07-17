@@ -1,5 +1,7 @@
 package com.library.util
 
+import com.library.error.InvalidIsbnException
+
 // ========== TITLE ==========
 const val TITLE_SIMBOL_MAX = 30
 fun titleShort(title: String): String {
@@ -68,7 +70,7 @@ fun digitsSum(n: Long): Int =
     if (n < 10L) n.toInt()
     else (n % 10L).toInt() + digitsSum(n / 10L)
 
-fun isbnValidate(isbn: String): Boolean {
+fun isValidChecksum(isbn: String): Boolean {
     val cleaned = isbnClean(isbn)
     if (cleaned.length != ISBN_13_QUANTITY || !cleaned.all { it.isDigit() }) return false
     var sum = 0
@@ -82,6 +84,27 @@ fun  describeIsbn(isbn: String?): String{
     if (isbn == null) return "ISBN отсутствует"
     if (isbn.isBlank()) return "ISBN отсутствует"
     return "Длина ${isbn.length}, GS1 префикс ${isbn.substring(0, 3)}"
+}
+
+fun parseIsbn(raw: String): String {
+    val cleaned = raw.replace("-", "").replace(" ", "")
+    require(cleaned.length == 13) {
+        throw InvalidIsbnException(raw, "ожидаемая длина 13, получено ${cleaned.length}")
+    }
+
+    require(cleaned.all { it.isDigit() }) {
+        throw InvalidIsbnException(raw, "содержит нецифровые символы")}
+    require(isValidChecksum(cleaned)) {
+        throw InvalidIsbnException(raw, "контрольная сумма не сходится")}
+    return cleaned
+}
+
+fun parseIsbnExplicit(raw: String): String {
+    val cleaned = raw.replace("-", "").replace(" ", "")
+    if (cleaned.length != 13) throw InvalidIsbnException(raw, "длина ${cleaned.length}, нужна 13")
+    if (!cleaned.all { it.isDigit() }) throw InvalidIsbnException(raw, "не только цифры")
+    if (!isValidChecksum(cleaned)) throw InvalidIsbnException(raw, "плохая контрольная сумма")
+    return cleaned
 }
 
 // ========== VALIDATION ==========
@@ -102,7 +125,7 @@ fun bookValidate(
     if (pages <= 0.toUShort()) errors.add("Количество страниц должно быть больше 0")
     if (!priceNonNegative(price)) errors.add("Цена должна быть положительной")
     if (copies < 0) errors.add("Количество экземпляров не может быть отрицательным")
-    isbn?.takeIf { !isbnValidate(it) }?.let { isbn ->
+    isbn?.takeIf { !isValidChecksum(it) }?.let { isbn ->
         val cleaned = isbnClean(isbn)
         val lenOk = cleaned.length == ISBN_13_QUANTITY
         val digOk = cleaned.all { it.isDigit() }

@@ -1,9 +1,5 @@
 package com.library.model
 
-import com.library.util.pageCategorize
-import com.library.util.priceFormat
-import com.library.util.SINGLE_MARKER_ACCESS
-
 abstract class Book(
     val title: String,
     val author: String,
@@ -19,7 +15,7 @@ abstract class Book(
     val tags: Set<String> = emptySet()
 ) : Loanable {
     var copiesInStock: Int = initialCopies
-        protected set // менять можно только изнутри класса
+        protected set
     var totalLoans: Int = 0
         protected set
 
@@ -53,28 +49,7 @@ abstract class Book(
         copiesInStock++
     }
 
-    open fun printCard() {
-        println(
-                """
-            |
-            |=== КАРТОЧКА КНИГИ ===
-            |Название:                  $title
-            |Автор:                     $author
-            |Год издания:               $year
-            |Кол-во страниц:            $pages (${pageCategorize(pages)})
-            |Цена:                      ${priceFormat(price.amount)}
-            |В наличии:                 $copiesInStock шт.
-            |Общая стоимость на складе: ${priceFormat(price.amount * copiesInStock)}
-        """.trimMargin()
-        )
-        println("Жанр:            ${genre.emoji} ${genre.displayName}")
-        originalLanguage?.let { println("Язык оригинала:            $it") }
-        translator?.let { println("Переводчик:                $it") }
-        edition?.let { println("Издание:                   $it") }
-        isbn?.let { println("ISBN:                      $it") }
-        if (tags.isNotEmpty()) println("Тэги:                      ${tags.joinToString(", ")}")
-        println("$SINGLE_MARKER_ACCESS Книга успешно добавлена!")
-        println("======================")
-    }
+    override fun toString(): String = "$title — $author, $year, $pages стр."
+
 }
 

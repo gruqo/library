@@ -1,38 +1,45 @@
 package com.library.io
 
+import com.library.model.*
 import com.library.util.SINGLE_MARKER_ACCESS
 import com.library.util.pageCategorize
 import com.library.util.priceFormat
 
-fun printCard(
-    title: String, author: String, language: String?, translator: String?, edition: Int?, year: UShort, pages: UShort, price: Double,
-    copies: Int, isbn: String?, tags: Set<String>
-) {
+fun printCard(book: Book) {
     println(
         """
         |
         |=== КАРТОЧКА КНИГИ ===
-        |Название:                  $title
-        |Автор:                     $author
-        |Год издания:               $year
-        |Кол-во страниц:            $pages (${pageCategorize(pages)})
-        |Цена:                      ${priceFormat(price)}
-        |В наличии:                 $copies шт.
-        |Общая стоимость на складе: ${priceFormat(price * copies)}
+        |Название:                  ${book.title}
+        |Автор:                     ${book.author}
+        |Год издания:               ${book.year}
+        |Кол-во страниц:            ${book.pages} (${pageCategorize(book.pages)})
+        |Цена:                      ${priceFormat(book.price.amount)}
+        |В наличии:                 ${book.copiesInStock} шт.
+        |Общая стоимость на складе: ${priceFormat(book.price.amount * book.copiesInStock)}
     """.trimMargin()
     )
 
-    language?.let { println("Язык оригинала:            $it") }
-    translator?.let { println("Переводчик:                $it") }
-    edition?.let { println("Издание:                   $it") }
-    isbn?.let { println("ISBN:                      $it") }
+    println("Жанр:                      ${book.genre.emoji} ${book.genre.displayName}")
+    book.originalLanguage?.let { println("Язык оригинала:            $it") }
+    book.translator?.let { println("Переводчик:                $it") }
+    book.edition?.let { println("Издание:                   $it") }
+    book.isbn?.let { println("ISBN:                      $it") }
+    if (book.tags.isNotEmpty()) println("Тэги:                      ${book.tags.joinToString(", ")}")
 
-    if (tags.isNotEmpty()) println("Тэги:                      ${tags.joinToString(", ")}")
+    when (book) {
+        is PrintedBook -> println("Страниц: ${book.pages}")
+        is EBook -> println("Формат: ${book.format}, ${book.sizeMb} MB")
+        is AudioBook -> {
+            val hours = book.durationMinutes / 60
+            val mins = book.durationMinutes % 60
+            println("Длительность: ${hours}ч ${mins}мин, читает ${book.narrator}")
+        }
+    }
 
     println(
         """
-        |
-        |${SINGLE_MARKER_ACCESS} Книга успешно добавлена!
+        |$SINGLE_MARKER_ACCESS Книга успешно добавлена!
         |======================
     """.trimMargin()
     )
