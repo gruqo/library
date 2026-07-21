@@ -1,10 +1,13 @@
 package com.library
 
+import java.util.zip.ZipFile
+
+import kotlin.io.path.*
+import com.library.demo.runDemos
 import com.library.error.*
 import com.library.io.printCard
 import com.library.model.*
 import com.library.util.*
-import com.library.demo.runDemos
 
 private fun setupLibrary(): Pair<Library, PrintedBook> {
     val library = Library("Городская библиотека №1", rows = 3, cols = 5)
@@ -206,6 +209,7 @@ private fun demoScopeFunctions(library: Library, cleanCode: PrintedBook) {
         ?.let { println("Валидный ISBN: $it") }
 
     library.forEachBook { println("- ${it.title} (${it.year})") }
+
 }
 
 fun main() {
@@ -216,4 +220,52 @@ fun main() {
     demoSorting(library)
     demoScopeFunctions(library, cleanCode)
     runDemos(library, cleanCode)
+
+
+    val original = Library("Original").apply {
+        addBook(PrintedBook(
+            "Чистый код",
+            "Р. Мартин",
+            2008,
+            Money(1290.0),
+            3,
+            pages = 464,
+            isbn ="9785916719892",
+            genre = Genre.PROGRAMMING,
+            tags = emptySet()))
+        addBook(PrintedBook(
+            "Война и мир",
+            "Л. Толстой",
+            1869,
+            Money(750.0),
+            2,
+            pages = 1225,
+            isbn ="9785170123469",
+            genre = Genre.FICTION,
+            tags = emptySet()))
+        }
+
+    val customPath = "project_files_output"
+    val fileName= "library.tsv"
+    val fullPathToFile = "$customPath/$fileName"
+
+    original.saveToTsv((Path(fullPathToFile)))
+    val loaded = library.loadLibraryFromTsv("Loaded",(Path(fullPathToFile)))
+    println("Оригинал: ${original.size} книг, после загрузки: ${loaded.size}")
+    loaded.all().forEach {
+        println(" - ${it.title} (${it.year})")
+    }
+
+    println()
+    println("Книг Толстого: ${countLinesContaining((Path(fullPathToFile)), "Толстой")}")
+
+    println()
+    library.saveWithBackup(Path(fullPathToFile))
+
+    println()
+    listBackups(Path("$customPath/backups"))
+
+    println()
+    library.exportZip(Path("$customPath/library.zip"))
+
 }
