@@ -1,0 +1,4 @@
+type	title	author	year	price	copies	isbn	genre
+EBook	Kotlin in Action	Д. Жемеров	2017	990.0	2147483647	9781617293290	PROGRAMMING
+PrintedBook	Война и мир	Л. Толстой	1869	750.0	2	9785170123469	FICTION
+PrintedBook	Чистый код	Р. Мартин	2008	1290.0	1	9785916719892	PROGRAMMING
