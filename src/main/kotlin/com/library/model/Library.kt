@@ -111,6 +111,18 @@ class Library(val name: String, rows: Int = 5, cols: Int = 5) {
 
     fun search(predicate: (Book) -> Boolean): List<Book> = books.filter(predicate)
 
+    fun searchHighlighted(query: String): List<String> {
+        val regex = Regex(Regex.escape(query), RegexOption.IGNORE_CASE)
+        return books
+            .filter { regex.containsMatchIn(it.title) || regex.containsMatchIn(it.author) }
+            .map { book ->
+                val highlightedTitle = regex.replace(book.title) { match -> "[${match.value}]" }
+                val highlightedAuthor = regex.replace(book.author) { match -> "[${match.value}]" }
+                "$highlightedTitle — $highlightedAuthor"
+            }
+    }
+
+
     fun forEachBook(action: (Book) -> Unit) {
         books.forEach(action)
     }
@@ -125,6 +137,19 @@ class Library(val name: String, rows: Int = 5, cols: Int = 5) {
         writer.toString()
    }
 
+}
+
+fun Library.report(): String = buildString {
+    val width = 36
+    appendLine("╔" + "═".repeat(width + 2) + "╗")
+    appendLine("║ " + "Каталог: ${name}".padEnd(width) + " ║")
+    appendLine("╠" + "═".repeat(width + 2) + "╣")
+    for (book in all().sortedBy { it.title }) {
+        appendLine("║ " + book.title.take(30).padEnd(30) + " " + "%5d".format(book.year.toInt()) + " ║")
+    }
+    appendLine("╠" + "═".repeat(width + 2) + "╣")
+    appendLine("║ " + "Всего книг: $size".padEnd(width) + " ║")
+    appendLine("╚" + "═".repeat(width + 2) + "╝")
 }
 
 fun Library.saveToTsv(path: Path) {
@@ -235,11 +260,9 @@ fun  listBackups(dir: Path) {
 
 fun Library.exportZip(zipPath: Path) {
     ZipOutputStream(FileOutputStream(zipPath.toFile())).use { zip ->
-    // 1. README
         zip.putNextEntry(ZipEntry("README.txt"))
         zip.write("Каталог: $name\nВсего книг: $size\n".toByteArray())
         zip.closeEntry()
-    // 2. TSV
         zip.putNextEntry(ZipEntry("library.tsv"))
         val tempTsv = Files.createTempFile("library", ".tsv")
         saveToTsv(tempTsv)
@@ -250,7 +273,6 @@ fun Library.exportZip(zipPath: Path) {
     println("Архив: ${zipPath.toAbsolutePath()}")
 }
 
-// И прочитайте содержимое архива:
 
 fun listZipContents(zipPath: Path) {
     ZipFile(zipPath.toFile()).use { zip ->

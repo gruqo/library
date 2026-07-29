@@ -25,6 +25,14 @@ fun authorSplit(fullName: String): String {
         else -> "${parts[0].first().uppercase()}. ${parts[1].first().uppercase()}. ${parts[2].replaceFirstChar { it.uppercase() }}"
     }
 }
+
+fun extractLastName(author: String): String {
+    // 1. "Фамилия, Имя" — берём до запятой
+    Regex("""^([^,]+),""").find(author)?.let { return it.groupValues[1].trim() }
+    // 2. "Имя Фамилия" или "Имя Отчество Фамилия" — последнее слово, если оно не инициал
+    val tokens = author.trim().split(Regex("\\s+"))
+    return tokens.last { !it.matches(Regex("""[A-ZА-ЯЁ]\.?""")) } // пропускаем "Л." как инициал
+}
 // ========== YEAR ==========
 const val YEAR_START: UShort = 1450u
 const val YEAR_CURRENT: UShort = 2026u

@@ -221,7 +221,6 @@ fun main() {
     demoScopeFunctions(library, cleanCode)
     runDemos(library, cleanCode)
 
-
     val original = Library("Original").apply {
         addBook(PrintedBook(
             "Чистый код",

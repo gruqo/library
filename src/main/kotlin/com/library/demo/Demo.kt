@@ -31,6 +31,23 @@ fun runDemos(library: Library, cleanCode: PrintedBook) {
 
     println("\n--- Демо: AudioBook ---")
     demoAudioBook()
+
+    println("\n--- Демо: extractIsbns ---")
+    demoExtractIsbns()
+
+    println("\n--- Демо: LibraryUser ---")
+    demoLibraryUser()
+
+    println("\n--- Демо: searchHighlighted ---")
+    demoSearchHighlighted(library)
+
+    println("\n--- Демо: extractLastName ---")
+    demoExtractLastName()
+
+    println("\n--- Демо: Library.report ---")
+    println(library.report())
+
+    println("")
 }
 
 private fun demoSearchResults(library: Library) {
@@ -161,4 +178,47 @@ private fun demoAudioBook() {
     println("Категория: ${audio.category}")
     println("Чтец: ${audio.narrator}")
     println("Длительность: ${audio.durationMinutes} мин")
+}
+
+fun extractIsbns(text: String): List<String> {
+ val pattern = Regex("""(?:97[89])(?:[-\s]?\d){10}""")
+    return pattern.findAll(text)
+        .map { it.value.replace(Regex("[-\\s]"), "") } // нормализуем
+        .toList()
+}
+
+private fun demoExtractIsbns() {
+    val texts = listOf(
+        "Серия: Бестселлеры O'Reilly. ISBN: 978-5-91671-989-2. Страниц: 464.",
+        "isbn 9785916719892, мягкая обложка",
+        "Артикул 978-5-9907763-1-3 (13 цифр)",
+        "Книга без ISBN — самиздат"
+    )
+    for (text in texts) {
+        val found = extractIsbns(text)
+        println("  Вход: \"${text.take(40)}...\" → Найдено: ${if (found.isEmpty()) "нет" else found}")
+    }
+}
+
+private fun demoLibraryUser() {
+    val ann = LibraryUser("Анна", "ann@example.com")
+    println("Создан пользователь: ${ann.name} <${ann.email}>")
+
+    try {
+        val bad = LibraryUser("Боб", "not-an-email")
+    } catch (e: IllegalArgumentException) {
+        println(e.message)
+    }
+}
+
+private fun demoSearchHighlighted(library: Library) {
+    println("Поиск 'кот': ${library.searchHighlighted("кот")}")
+    println("Поиск 'толстой': ${library.searchHighlighted("толстой")}")
+}
+
+private fun demoExtractLastName() {
+    val samples = listOf("Лев Толстой", "Толстой Л.Н.", "Л. Н. Толстой", "Tolstoy, Leo")
+    for (sample in samples) {
+        println("  \"$sample\" -> \"${extractLastName(sample)}\"")
+    }
 }
