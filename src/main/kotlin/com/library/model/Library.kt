@@ -1,5 +1,7 @@
 package com.library.model
 
+import com.library.error.*
+import com.library.notify.Notifier
 import java.io.FileOutputStream
 import java.io.FileNotFoundException
 import java.io.StringWriter
@@ -9,10 +11,9 @@ import java.util.zip.ZipFile
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import kotlin.io.path.*
-import com.library.error.*
 
 
-class Library(val name: String, rows: Int = 5, cols: Int = 5) {
+class Library(val name: String, rows: Int = 5, cols: Int = 5, private val notifier: Notifier? = null) {
     internal val books: MutableList<Book> = mutableListOf()
     internal val byIsbn = mutableMapOf<String, Book>()
 
@@ -30,6 +31,7 @@ class Library(val name: String, rows: Int = 5, cols: Int = 5) {
             if (isbn in byIsbn) throw BookAlreadyExistsException(isbn) }
         books.add(book)
         book.isbn?.let { byIsbn[it] = book }
+        notifier?.bookAdded(book.title)
     }
 
     fun findByIsbn(isbn: String): Book? = byIsbn[isbn]
