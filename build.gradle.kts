@@ -14,6 +14,7 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testImplementation("io.mockk:mockk:1.13.10")
+    implementation("org.yaml:snakeyaml:2.6")
 }
 
 tasks.test {

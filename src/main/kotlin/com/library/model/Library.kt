@@ -12,7 +12,6 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import kotlin.io.path.*
 
-
 class Library(val name: String, rows: Int = 5, cols: Int = 5, private val notifier: Notifier? = null) {
     internal val books: MutableList<Book> = mutableListOf()
     internal val byIsbn = mutableMapOf<String, Book>()
@@ -25,14 +24,18 @@ class Library(val name: String, rows: Int = 5, cols: Int = 5, private val notifi
     fun nextReservation(): Pair<String, Book>? = reservationQueue.removeFirstOrNull()
     fun queueSize(): Int = reservationQueue.size
 
-
+    //fun addBook(book: Book) { booksList.add(book) }
     fun addBook(book: Book) {
         book.isbn?.let { isbn ->
-            if (isbn in byIsbn) throw BookAlreadyExistsException(isbn) }
+            if (isbn in byIsbn) throw BookAlreadyExistsException(isbn)
+        }
         books.add(book)
         book.isbn?.let { byIsbn[it] = book }
         notifier?.bookAdded(book.title)
+        genreCountDelegate.reset()
     }
+
+
 
     fun findByIsbn(isbn: String): Book? = byIsbn[isbn]
     fun hasIsbn(isbn: String): Boolean = isbn in byIsbn
@@ -50,7 +53,6 @@ class Library(val name: String, rows: Int = 5, cols: Int = 5, private val notifi
     val size: Int get() = books.size
     fun all(): List<Book> = books.toList()
     override fun toString(): String = "Библиотека «$name» ($size книг)"
-
 
     fun byGenre(): Map<Genre, List<Book>> = books.groupBy { it.genre }
     fun countByGenre(): Map<Genre, Int> = books.groupBy { it.genre }.mapValues { (_, list) -> list.size }
@@ -138,6 +140,23 @@ class Library(val name: String, rows: Int = 5, cols: Int = 5, private val notifi
         }
         writer.toString()
    }
+
+    private val genreCountDelegate = Memoized {
+        println("[Memo] Computing genre counts...")
+        books.groupingBy { it.genre }.eachCount()
+    }
+    val genreCount: Map<Genre, Int> by genreCountDelegate
+
+    val authorIndex: Map<String, List<Book>> by lazy {
+        println("[Lazy] Computing authorIndex...")
+        books.groupBy { it.author }
+    }
+
+    lateinit var defaultLoanPolicy: LoanPolicy
+    fun lend(book: Book): LoanResult {
+        check(::defaultLoanPolicy.isInitialized) { "Loan policy not configured" }
+        return book.lend()
+    }
 
 }
 

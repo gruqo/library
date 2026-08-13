@@ -2,6 +2,7 @@ package com.library.demo
 
 import com.library.model.*
 import com.library.util.*
+import com.library.dsl.library
 
 fun runDemos(library: Library, cleanCode: PrintedBook) {
     println("\n═══════════════════════════════════════")
@@ -46,6 +47,24 @@ fun runDemos(library: Library, cleanCode: PrintedBook) {
 
     println("\n--- Демо: Library.report ---")
     println(library.report())
+
+    println("\n--- Демо: lazy authorIndex ---")
+    demoLazy(library, cleanCode)
+
+    println("\n--- Демо: lateinit defaultLoanPolicy ---")
+    demoLateinit()
+
+    println("\n--- Демо: memoized genreCount ---")
+    demoMemo(library)
+
+    println("\n--- Демо: IndexedLibrary (делегирование) ---")
+    demoIndexedLibrary()
+
+    println("\n--- Демо: YAML-DSL библиотека ---")
+    demoYamlLibrary()
+
+    println("\n--- Демо: @DslMarker в действии ---")
+    demoDslMarker()
 
     println("")
 }
@@ -221,4 +240,111 @@ private fun demoExtractLastName() {
     for (sample in samples) {
         println("  \"$sample\" -> \"${extractLastName(sample)}\"")
     }
+}
+
+private fun demoLazy(library: Library, cleanCode: PrintedBook) {
+    val book1 = cleanCode
+    val book2 = PrintedBook(
+        "Война и мир", "Л. Толстой", 1869, Money(750.0), 2,
+        pages = 1225, isbn = "9785170123469", genre = Genre.FICTION, tags = emptySet()
+    )
+
+    val lib = Library("...").apply {
+        addBook(book1); addBook(book2)
+    }
+
+    println("Перед обращением — лениво ничего не вычислено")
+    println(lib.authorIndex)
+    println(lib.authorIndex)
+}
+
+private fun demoLateinit() {
+    val lib = Library("Test")
+
+    try {
+        lib.lend(PrintedBook(title = "Чистый код", author = "Р. Мартин", year = 2008, price = Money(1290.0),
+            copies = 1, pages = 464, isbn = "9785916719892", genre = Genre.PROGRAMMING, tags = emptySet()
+        ))
+    } catch (e: IllegalStateException) {
+        println("До настройки: ${e.message}")
+    }
+
+    lib.defaultLoanPolicy = LoanPolicy(maxLoansPerUser = 5, maxDays = 14)
+    println("Политика настроена: ${lib.defaultLoanPolicy}")
+
+    val book = PrintedBook(title = "Война и мир", author = "Л. Толстой", year = 1869, price = Money(750.0),
+        copies = 2, pages = 1225, isbn = "9785170123469", genre = Genre.FICTION, tags = emptySet()
+    )
+    lib.addBook(book)
+    val result = lib.lend(book)
+    println("Выдача: $result")
+}
+
+private fun demoMemo(library: Library) {
+    println(library.genreCount)
+    println(library.genreCount)
+}
+
+private fun demoIndexedLibrary() {
+    val ilib = IndexedLibrary("Indexed")
+
+    val book1 = PrintedBook(
+        "Чистый код", "Р. Мартин", 2008, Money(1290.0), 3,
+        pages = 464, isbn = "9785916719892", genre = Genre.PROGRAMMING, tags = emptySet()
+    )
+    val book2 = PrintedBook(
+        "Война и мир", "Л. Толстой", 1869, Money(750.0), 2,
+        pages = 1225, isbn = "9785170123469", genre = Genre.FICTION, tags = emptySet()
+    )
+
+    ilib.addBook(book1)
+    ilib.addBook(book2)
+
+    println("Размер: ${ilib.size}")
+    println("ISBN 9785916719892: ${ilib["9785916719892"]}")
+    for ((isbn, book) in ilib) {
+        println("$isbn -> ${book.title}")
+    }
+
+    println("Толстой: ${ilib.byAuthor("Л. Толстой")}")
+}
+
+private fun demoYamlLibrary() {
+    val lib = library(
+        "Городская №1 (из YAML)",
+        "src_files/printed_books.yaml",
+        "src_files/ebooks.yaml",
+        "src_files/audiobooks.yaml"
+    )
+    println("Создано через YAML-DSL: ${lib.size} книг")
+    lib.all().forEach { println("  - ${it.title} (${it.category})") }
+}
+
+private fun demoDslMarker() {
+    val lib = library("Демо @DslMarker") {
+        book {
+            title = "Чистый код"
+            author = "Р. Мартин"
+            year = 2008
+            pages = 464
+        }
+        book {
+            title = "Война и мир"
+            author = "Л. Толстой"
+            year = 1869
+            pages = 1225
+        }
+    }
+    println("Создано через configure-DSL: ${lib.size} книг")
+    lib.all().forEach { println("  - ${it.title} (${it.category})") }
+    // @DslMarker в действии: вложенный book { } внутри book { } запрещён компилятором.
+    // НЕ РАСКОММЕНТИРОВАТЬ — это демонстрирует ошибку @DslMarker (receiver ambiguity):
+    // val bad = library("Bad") {
+    //     book {
+    //         title = "X"
+    //         book { // КОМПИЛЯТОР ЗАПРЕЩАЕТ: 'book' ambiguous между LibraryBuilder и BookBuilder
+    //             title = "Y"
+    //         }
+    //     }
+    // }
 }

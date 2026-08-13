@@ -220,34 +220,40 @@ fun main() {
     runDemos(library, cleanCode)
 
     val original = Library("Original").apply {
-        addBook(PrintedBook(
-            "Чистый код",
-            "Р. Мартин",
-            2008,
-            Money(1290.0),
-            3,
-            pages = 464,
-            isbn ="9785916719892",
-            genre = Genre.PROGRAMMING,
-            tags = emptySet()))
-        addBook(PrintedBook(
-            "Война и мир",
-            "Л. Толстой",
-            1869,
-            Money(750.0),
-            2,
-            pages = 1225,
-            isbn ="9785170123469",
-            genre = Genre.FICTION,
-            tags = emptySet()))
-        }
+        addBook(
+            PrintedBook(
+                "Чистый код",
+                "Р. Мартин",
+                2008,
+                Money(1290.0),
+                3,
+                pages = 464,
+                isbn = "9785916719892",
+                genre = Genre.PROGRAMMING,
+                tags = emptySet()
+            )
+        )
+        addBook(
+            PrintedBook(
+                "Война и мир",
+                "Л. Толстой",
+                1869,
+                Money(750.0),
+                2,
+                pages = 1225,
+                isbn = "9785170123469",
+                genre = Genre.FICTION,
+                tags = emptySet()
+            )
+        )
+    }
 
     val customPath = "project_files_output"
-    val fileName= "library.tsv"
+    val fileName = "library.tsv"
     val fullPathToFile = "$customPath/$fileName"
 
     original.saveToTsv((Path(fullPathToFile)))
-    val loaded = library.loadLibraryFromTsv("Loaded",(Path(fullPathToFile)))
+    val loaded = library.loadLibraryFromTsv("Loaded", (Path(fullPathToFile)))
     println("Оригинал: ${original.size} книг, после загрузки: ${loaded.size}")
     loaded.all().forEach {
         println(" - ${it.title} (${it.year})")
