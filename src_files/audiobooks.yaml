@@ -1,0 +1,8 @@
+books:
+  - type: audiobook
+    title: Война и мир (аудио)
+    author: Л. Толстой
+    year: 2005
+    price: 500.0
+    durationMinutes: 2880
+    narrator: Иван Иванов
