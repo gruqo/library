@@ -3,6 +3,11 @@ package com.library.demo
 import com.library.model.*
 import com.library.util.*
 import com.library.dsl.library
+import com.library.dsl.loadBooksFromYaml
+import com.library.repo.Identifiable
+import com.library.repo.Repository
+import com.library.repo.BookSource
+
 
 fun runDemos(library: Library, cleanCode: PrintedBook) {
     println("\n═══════════════════════════════════════")
@@ -65,6 +70,24 @@ fun runDemos(library: Library, cleanCode: PrintedBook) {
 
     println("\n--- Демо: @DslMarker в действии ---")
     demoDslMarker()
+
+    println("\n--- Демо: Repository<T> ---")
+    demoRepository()
+
+    println("\n--- Демо: BookSource (variance) ---")
+    demoBookSource()
+
+    println("\n--- Демо: reified ofType ---")
+    demoOfType()
+
+    println("\n--- Демо: ISBN extensions ---")
+    demoIsbnExtensions()
+
+    println("\n--- Демо: операторы Library ---")
+    demoOperators()
+
+    println("\n--- Демо: infix byAuthor ---")
+    demoByAuthor()
 
     println("")
 }
@@ -131,8 +154,7 @@ private fun demoTotalPages(library: Library) {
 
 private fun demoUnusedTestObjects() {
     val libTest = Library("Test")
-    val cleanCodeTest = PrintedBook("Чистый код", "Р. Мартин", 2008, Money(1290.0), 0, pages = 464,
-        isbn = "9785916719892", genre = Genre.PROGRAMMING, tags = setOf("код", "паттерны"))
+    val cleanCodeTest = loadBooksFromYaml("src_files/printed_books.yaml").first() as PrintedBook
     println("Тестовая библиотека: ${libTest.name}, тестовая книга: ${cleanCodeTest.title}")
 }
 
@@ -185,14 +207,7 @@ private fun demoRemoveBook(library: Library, cleanCode: PrintedBook) {
 }
 
 private fun demoAudioBook() {
-    val audio = AudioBook(
-        title = "Война и мир (аудио)",
-        author = "Л. Толстой",
-        year = 2005,
-        price = Money(500.0),
-        durationMinutes = 2880,
-        narrator = "Иван Иванов"
-    )
+    val audio = loadBooksFromYaml("src_files/audiobooks.yaml").first() as AudioBook
     println("Создана: ${audio.title}")
     println("Категория: ${audio.category}")
     println("Чтец: ${audio.narrator}")
@@ -287,18 +302,7 @@ private fun demoMemo(library: Library) {
 
 private fun demoIndexedLibrary() {
     val ilib = IndexedLibrary("Indexed")
-
-    val book1 = PrintedBook(
-        "Чистый код", "Р. Мартин", 2008, Money(1290.0), 3,
-        pages = 464, isbn = "9785916719892", genre = Genre.PROGRAMMING, tags = emptySet()
-    )
-    val book2 = PrintedBook(
-        "Война и мир", "Л. Толстой", 1869, Money(750.0), 2,
-        pages = 1225, isbn = "9785170123469", genre = Genre.FICTION, tags = emptySet()
-    )
-
-    ilib.addBook(book1)
-    ilib.addBook(book2)
+    loadBooksFromYaml("src_files/printed_books.yaml").forEach { ilib.addBook(it) }
 
     println("Размер: ${ilib.size}")
     println("ISBN 9785916719892: ${ilib["9785916719892"]}")
@@ -347,4 +351,86 @@ private fun demoDslMarker() {
     //         }
     //     }
     // }
+}
+
+private fun demoRepository() {
+    data class Author(override val id: String, val name: String, val country: String) : Identifiable<String>
+
+    class BookEntry(val book: Book) : Identifiable<String> {
+        override val id: String = book.isbn ?: error("Book without ISBN cannot be in repository")
+    }
+
+    val authors: Repository<String, Author> = Repository()
+    authors.add(Author("tolstoy", "Лев Толстой", "Россия"))
+    authors.add(Author("martin", "Роберт Мартин", "США"))
+    println("Авторы: ${authors.all().map { it.name }}")
+
+    val bookRepo: Repository<String, BookEntry> = Repository()
+    loadBooksFromYaml("src_files/printed_books.yaml").forEach { book ->
+        bookRepo.add(BookEntry(book))
+    }
+    println("Книги в репозитории: ${bookRepo.all().map { it.book.title }}")
+}
+
+private fun demoBookSource() {
+    class PrintedSource : BookSource<PrintedBook> {
+        override fun all(): List<PrintedBook> = listOf(
+            PrintedBook("Чистый код", "Р. Мартин", 2008, Money(1290.0), 3, pages = 464,
+                isbn = "9785916719892", genre = Genre.PROGRAMMING, tags = emptySet())
+        )
+    }
+
+    fun printAll(source: BookSource<Book>) {
+        for (book in source.all()) println("  - ${book.title}")
+    }
+
+    printAll(PrintedSource())
+    // PrintedSource (BookSource<PrintedBook>) передаётся туда, где ожидается BookSource<Book> — компилируется только благодаря out T (ковариация).
+}
+
+private fun demoOfType() {
+    val lib = Library("ofType demo")
+    lib.addBook(PrintedBook("Чистый код", "Р. Мартин", 2008, Money(1290.0), 3, pages = 464, isbn = "9785916719892", genre = Genre.PROGRAMMING, tags = emptySet()))
+    lib.addBook(EBook("Война и мир", "Л. Толстой", 1869, Money(500.0), pages = 1300, sizeMb = 3.5, format = "EPUB", isbn = "9785000560332", genre = Genre.FICTION))
+    lib.addBook(AudioBook("Мастер и Маргарита", "М. Булгаков", 1967, Money(800.0), durationMinutes = 720, narrator = "Иван Иванов"))
+    println("EBook: ${lib.ofType<EBook>().map { it.title }}")
+    println("PrintedBook: ${lib.ofType<PrintedBook>().map { it.title }}")
+    println("AudioBook: ${lib.ofType<AudioBook>().map { it.title }}")
+    println("Тип T: ${lib.ofType<EBook>()::class.simpleName}")
+    // reified T — тип T доступен в runtime (без erasure). Без reified filterIsInstance<T>() не скомпилировалось бы.
+}
+
+private fun demoIsbnExtensions() {
+    val raw = "978-0-13-468599-1"
+    val clean = raw.cleanIsbn()
+    println("raw: $raw")
+    println("cleanIsbn(): $clean")
+    println("isbnClean(raw): ${isbnClean(raw)}")  // сравнение с обычной функцией
+    println("isValidIsbn13(): ${raw.isValidIsbn13()}")
+    println("isbnPrefix: ${clean.isbnPrefix}")
+    println("short.isbnPrefix: ${"12".isbnPrefix}")  // null (длина < 3)
+    val bad = "978-5-17-118363-2"
+    println("bad.isValidIsbn13(): ${bad.isValidIsbn13()}")  // false
+    // Extension читается как метод объекта — короче и привычнее, особенно в IDE-автодополнении.
+}
+
+private fun demoOperators() {
+    val lib = Library("Операторы")
+    loadBooksFromYaml("src_files/printed_books.yaml").forEach { lib + it }
+    loadBooksFromYaml("src_files/ebooks.yaml").forEach { lib + it }
+    println("Размер: ${lib.size}")
+    println("По ISBN: ${lib["9785916719892"]?.title}")
+    println("book1 in lib: ${lib["9785916719892"]!! in lib}")
+    println("Книги:")
+    for (b in lib) println("  ${b.title}")
+}
+
+private fun demoByAuthor() {
+    val lib = Library("byAuthor")
+    loadBooksFromYaml("src_files/printed_books.yaml").forEach { lib.addBook(it) }
+    loadBooksFromYaml("src_files/audiobooks.yaml").forEach { lib.addBook(it) }
+    val tolstoy = lib byAuthor "Л. Толстой"
+    println("Толстой: ${tolstoy.map { it.title }}")
+    val martin = lib byAuthor "Р. Мартин"
+    println("Мартин: ${martin.map { it.title }}")
 }

@@ -144,3 +144,19 @@ fun bookValidate(
     }
     return errors
 }
+
+// ========== ISBN EXTENSIONS ==========
+fun String.cleanIsbn(): String = replace(Regex("[\\s-]"), "")
+
+fun String.isValidIsbn13(): Boolean {
+    val cleaned = cleanIsbn()
+    if (cleaned.length != 13) return false
+    if (!cleaned.all { it.isDigit() }) return false
+    val sum = cleaned.mapIndexed { i, c ->
+        c.digitToInt() * if (i % 2 == 0) 1 else 3
+    }.sum()
+    return sum % 10 == 0
+}
+
+val String.isbnPrefix: String?
+    get() = if (length >= 3 && all { it.isDigit() }) substring(0, 3) else null

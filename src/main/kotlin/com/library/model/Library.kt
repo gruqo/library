@@ -35,9 +35,15 @@ class Library(val name: String, rows: Int = 5, cols: Int = 5, private val notifi
         genreCountDelegate.reset()
     }
 
+    operator fun plus(book: Book): Library {
+        addBook(book)
+        return this
+    }
+
 
 
     fun findByIsbn(isbn: String): Book? = byIsbn[isbn]
+    operator fun get(isbn: String): Book? = byIsbn[isbn]
     fun hasIsbn(isbn: String): Boolean = isbn in byIsbn
 
     fun getByIsbn(isbn: String): Book =
@@ -52,6 +58,8 @@ class Library(val name: String, rows: Int = 5, cols: Int = 5, private val notifi
     fun removeBook(book: Book): Boolean = books.remove(book)
     val size: Int get() = books.size
     fun all(): List<Book> = books.toList()
+    operator fun contains(book: Book): Boolean = book in books
+    operator fun iterator(): Iterator<Book> = books.iterator()
     override fun toString(): String = "Библиотека «$name» ($size книг)"
 
     fun byGenre(): Map<Genre, List<Book>> = books.groupBy { it.genre }
@@ -302,3 +310,9 @@ fun listZipContents(zipPath: Path) {
         }
     }
 }
+
+inline fun <reified T : Book> Library.ofType(): List<T> =
+    all().filterIsInstance<T>()
+
+infix fun Library.byAuthor(author: String): List<Book> =
+    search { it.author == author }
