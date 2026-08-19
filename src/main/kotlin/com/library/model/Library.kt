@@ -7,14 +7,19 @@ import java.io.FileNotFoundException
 import java.io.StringWriter
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.Collections
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.zip.ZipFile
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import kotlin.io.path.*
 
 class Library(val name: String, rows: Int = 5, cols: Int = 5, private val notifier: Notifier? = null) {
-    internal val books: MutableList<Book> = mutableListOf()
-    internal val byIsbn = mutableMapOf<String, Book>()
+    internal val books: MutableList<Book> = Collections.synchronizedList(mutableListOf())
+    internal val byIsbn = ConcurrentHashMap<String, Book>()
+
+    private val totalLoans = AtomicInteger(0)
 
     private val reservationQueue: ArrayDeque<Pair<String, Book>> = ArrayDeque()
     fun reserve(userName: String, book: Book) {
@@ -24,13 +29,12 @@ class Library(val name: String, rows: Int = 5, cols: Int = 5, private val notifi
     fun nextReservation(): Pair<String, Book>? = reservationQueue.removeFirstOrNull()
     fun queueSize(): Int = reservationQueue.size
 
-    //fun addBook(book: Book) { booksList.add(book) }
+    @Synchronized
     fun addBook(book: Book) {
         book.isbn?.let { isbn ->
-            if (isbn in byIsbn) throw BookAlreadyExistsException(isbn)
+            if (byIsbn.putIfAbsent(isbn, book) != null) throw BookAlreadyExistsException(isbn)
         }
         books.add(book)
-        book.isbn?.let { byIsbn[it] = book }
         notifier?.bookAdded(book.title)
         genreCountDelegate.reset()
     }
@@ -44,7 +48,7 @@ class Library(val name: String, rows: Int = 5, cols: Int = 5, private val notifi
 
     fun findByIsbn(isbn: String): Book? = byIsbn[isbn]
     operator fun get(isbn: String): Book? = byIsbn[isbn]
-    fun hasIsbn(isbn: String): Boolean = isbn in byIsbn
+    fun hasIsbn(isbn: String): Boolean = byIsbn.containsKey(isbn)
 
     fun getByIsbn(isbn: String): Book =
         byIsbn[isbn] ?: throw BookNotFoundException(isbn)
@@ -161,10 +165,15 @@ class Library(val name: String, rows: Int = 5, cols: Int = 5, private val notifi
     }
 
     lateinit var defaultLoanPolicy: LoanPolicy
+    @Synchronized
     fun lend(book: Book): LoanResult {
         check(::defaultLoanPolicy.isInitialized) { "Loan policy not configured" }
-        return book.lend()
+        val result = book.lend()
+        if (result is LoanResult.Success) totalLoans.incrementAndGet()
+        return result
     }
+
+    fun stats(): String = "Книг: ${books.size}, выдач: ${totalLoans.get()}"
 
 }
 

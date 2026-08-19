@@ -38,6 +38,7 @@ abstract class Book(
     override val isAvailable: Boolean
         get() = copiesInStock > 0
 
+    @Synchronized
     override fun lend(): LoanResult {
         if (copiesInStock <= 0) return LoanResult.NotAvailable(0)
         copiesInStock--
@@ -45,6 +46,7 @@ abstract class Book(
         return LoanResult.Success
     }
 
+    @Synchronized
     override fun returnCopy() {
         copiesInStock++
     }
