@@ -1,0 +1,21 @@
+books:
+  - type: printed
+    title: Чистый код
+    author: Р. Мартин
+    year: 2008
+    pages: 464
+    price: 1290.0
+    copies: 3
+    isbn: "9785916719892"
+    genre: PROGRAMMING
+    tags: [classic, must-read]
+  - type: printed
+    title: Война и мир
+    author: Л. Толстой
+    year: 1869
+    pages: 1225
+    price: 750.0
+    copies: 2
+    isbn: "9785170123469"
+    genre: FICTION
+    tags: [classic, russian]

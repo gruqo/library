@@ -1,0 +1,11 @@
+books:
+  - type: ebook
+    title: Kotlin in Action
+    author: Д. Жемеров
+    year: 2017
+    pages: 464
+    price: 990.0
+    sizeMb: 12.5
+    format: PDF
+    isbn: "9781617293290"
+    genre: PROGRAMMING
