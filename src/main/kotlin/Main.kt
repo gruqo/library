@@ -1,4 +1,3 @@
-package main
 
 fun main() {
     println("Добро пожаловать в библиотеку!\n")
@@ -6,40 +5,31 @@ fun main() {
     print("Введите название книги: ")
     val titleInput = readln()
     val titleTrimm = if (titleInput.length > 30) titleInput.take(27) + "..." else titleInput
-
     val titleFinal = when {
-        titleTrimm.isBlank() -> titleTrimm
-        titleTrimm == titleTrimm.uppercase() -> {
+        titleTrimm.isBlank() -> titleInput
+        titleTrimm.any { it.isLetter() } && titleTrimm == titleTrimm.uppercase() -> {
             println("Название всё капсом, переведём в Title Case")
-            titleTrimm.split(" ").joinToString(" ") { word ->
-                word.lowercase().replaceFirstChar { it.uppercase() }
-            }
+            titleTrimm.split(" ")
+                .filter { it.isNotBlank() }
+                .joinToString(" ") { word ->
+                    word.lowercase().replaceFirstChar { it.uppercase() }
+                }
         }
         else -> titleTrimm
     }
 
     print("Введите автора: ")
-    val authorInput = readln().split(" ")
-
-    val autorName = authorInput.getOrNull(0)
-    val autorSirName = authorInput.getOrNull(1)
-    val autorSurname = authorInput.getOrNull(2)
-
-    val author = when {
-        autorSurname != null && autorSirName != null && autorName != null ->
-            "${autorName.first().uppercase()}. ${autorSirName.first().uppercase()}. ${autorSurname.replaceFirstChar { it.uppercase() }}"
-        autorSurname != null && autorName != null ->
-            "${autorName.first().uppercase()}. ${autorSurname.replaceFirstChar { it.uppercase() }}"
-        !autorName.isNullOrBlank() ->
-            autorName.replaceFirstChar { it.uppercase() }
-        else -> {
-            if (autorName.isNullOrBlank()) "Автор не известен" else "Ошибка"
-        }
+    val authorParts = readln().split(" ").filter { it.isNotBlank() }
+    val author = when (authorParts.size) {
+        0 -> "Автор неизвестен"
+        1 -> authorParts[0].replaceFirstChar { it.uppercase() }
+        2 -> "${authorParts[0].first().uppercase()}. ${authorParts[1].replaceFirstChar { it.uppercase() }}"
+        else -> "${authorParts[0].first().uppercase()}. ${authorParts[1].first().uppercase()}. ${authorParts.last().replaceFirstChar { it.uppercase() }}"
     }
 
     print("Введите год издания: ")
     val yearInput = readln()
-    val year = yearInput.toIntOrNull()?: error("Год должен быть числом, а не «$yearInput»")
+    val year = yearInput.toIntOrNull() ?: error("Год должен быть числом, а не «$yearInput»")
     val yearFormated = year.toUShort()
     val startYear: UShort = 1450u
     val currentYear: UShort = 2026u
@@ -88,35 +78,24 @@ fun main() {
         println("$singleMarkerAccess Цена: $price")
     }
 
-    if (copiesInStockMin >= copiesInStock ) {
+    if (copiesInStockMin >= copiesInStock) {
         println("$singleMarkerFailed Экземпляров: $copiesInStock - должно быть больше нуля")
         countError++
     } else {
         println("$singleMarkerAccess  Экземпляров: $copiesInStock")
     }
 
-
+    var isbnClean: String
     while (true) {
         print("Введите ISBN: ")
         val isbn = readln()
-        val isbnClean: String = isbn.replace("-", "").replace(" ", "")
+        isbnClean = isbn.replace("-", "").replace(" ", "")
 
-        var lengthMarker: Char
-        var allDigitsMarker: Char
-        var controlSummMarker: Char
-        var controlSummMess: String
-        var isbnValidateMess: String
-
-        if (isbnClean.length == 13 ) {
+        if (isbnClean.length == 13) {
             val allDigits = isbnClean.all { it.isDigit() }
-            lengthMarker = singleMarkerAccess
-
-
             if (!allDigits) {
                 println("Ошибка: ISBN должен содержать только цифры")
                 continue
-            }else{
-                allDigitsMarker = singleMarkerAccess
             }
 
             var sumEven = 0
@@ -132,27 +111,24 @@ fun main() {
             }
 
             val total = sumEven + sumOdd * 3
-
-            if (total % 10 == 0) {
-                controlSummMarker = singleMarkerAccess
-                controlSummMess = "(делится на 10)"
-                isbnValidateMess = "валиден"
-            }else{
-                controlSummMarker = singleMarkerFailed
-                controlSummMess = "(не делится на 10)"
-                isbnValidateMess = "не валиден"
-            }
+            val isValid = total % 10 == 0
+            val controlSummMarker = if (isValid) singleMarkerAccess else singleMarkerFailed
+            val controlSummMess = if (isValid) "(делится на 10)" else "(не делится на 10)"
+            val isbnValidateMess = if (isValid) "валиден" else "не валиден"
 
             println("""
-                
                 |======== ISBN =======
                 |Очищенный:                 $isbnClean
-                |Длина:                     $lengthMarker   ${isbnClean.length} 
-                |Все цифры:                 $allDigitsMarker
+                |Длина:                     $singleMarkerAccess   ${isbnClean.length}
+                |Все цифры:                 $singleMarkerAccess
                 |Контрольная сумма:         $controlSummMarker   $total $controlSummMess
                 |ISBN $isbnValidateMess.
                 |=====================
             """.trimMargin())
+
+            if (!isValid) {
+                countError++
+            }
             break
         } else {
             println("Введенный ISBN не соответствует формату ISBN-13")
@@ -161,10 +137,11 @@ fun main() {
 
     fun thickness() {
         println("\nСтраниц Категория")
-        when {pages < thicknessThin -> println("< 50 \"Брошюра\"")
+        when {
+            pages < thicknessThin -> println("< 50 \"Брошюра\"")
             pages in thicknessThin until thicknessStandard -> println("50..199 \"Стандартная книга\"")
-            pages in thicknessStandard until  thicknessBig -> println("200..499 \"Толстая книга\"")
-            pages in thicknessBig until thicknessVeryBig-> println("500..999 \"Очень толстая книга\"")
+            pages in thicknessStandard until thicknessBig -> println("200..499 \"Толстая книга\"")
+            pages in thicknessBig until thicknessVeryBig -> println("500..999 \"Очень толстая книга\"")
             pages >= thicknessVeryBig -> println("1000 \"Кирпич\"")
         }
     }
@@ -179,6 +156,7 @@ fun main() {
             |Кол-во страниц:            $pages
             |Цена:                      ${"%.2f".format(price)} руб.
             |В наличии:                 $copiesInStock шт.
+            |ISBN:                      $isbnClean
             |Общая стоимость на складе: ${"%.2f".format(price * copiesInStock)} руб.
             |======================
         """.trimMargin())
@@ -192,29 +170,6 @@ fun main() {
         println("\nИтог: НЕ принято в каталог (количество проблем: $countError )")
     }
 
-
-    /* Задача 4-3. Float vs Double — ловушка
-    //    Запустите, объясните результат в комментарии в коде (одно предложение).
-    //    В реальном коде — для денег используйте BigDecimal, для научных вычислений — Double с epsilon-сравнением.
-    //    println("\nВнимание, плавающая точка")
-    //    val a = 0.1 + 0.2
-    //    val b = 0.3
-    //    println("a = $a")
-    //    println("b = $b")
-    //    println("a == b ? ${a == b}") // что выведет?
-    //    println("|a - b| < 1e-9 ? ${kotlin.math.abs(a - b) < 1e-9}")
-
-    // Часть вывода a == b ? false
-    // println вызывает Double.toString, который печатает минимальную строку
-    // т.е. вместо реальных
-    // 0.1000000000000000055511151231257827021181583404541015625
-    // 0.200000000000000011102230246251565404236316680908203125
-    // сумма которых не равна 3, в выводе отображается 0.1 и 0.2
-    */
-
-    /* Задача 3-3.
-    // используется for, т.к. известно число итераций и работает break
-    */
     print("\nСколько раз выдать книгу? ")
     val requestsCount = readln().toInt()
     var currentlyOnHand = 0
@@ -233,14 +188,13 @@ fun main() {
 
     println("""
 
-            |=== ФИНАЛЬНАЯ СТАТИСТИКА ВЫДАЧ КНИГИ "$titleFinal" ===
+            |=== ФИНАЛЬНАЯ СТАТИСТИКА ВЫДАЧ КНИГИ "$titleTrimm" ===
             |Всего выдач:               $totalLoans
             |Сколько на руках:          $currentlyOnHand
             |Сколько свободно:          ${copiesInStock - currentlyOnHand}
             |======================
     """.trimMargin())
 
-    // Задача 4 (★ бонус). Поиск года
     var attempts = 0
     print("\nИнтерактивная игра \"Поиск года\"")
     while (true) {
