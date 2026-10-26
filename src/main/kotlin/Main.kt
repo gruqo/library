@@ -30,9 +30,8 @@ fun main() {
     print("Введите год издания: ")
     val yearInput = readln()
     val year = yearInput.toIntOrNull() ?: error("Год должен быть числом, а не «$yearInput»")
-    val yearFormated = year.toUShort()
-    val startYear: UShort = 1450u
-    val currentYear: UShort = 2026u
+    val startYear = 1450
+    val currentYear = 2026
 
     print("Введите количество страниц: ")
     val pages = readln().toUShort()
@@ -57,12 +56,13 @@ fun main() {
 
     println("\nПроверка карточки книги...")
 
-    if (yearFormated !in startYear..currentYear) {
-        println("$singleMarkerFailed Год $yearFormated вне диапазона $startYear..$currentYear")
+    if (year !in startYear..currentYear) {
+        println("$singleMarkerFailed Год $year вне диапазона $startYear..$currentYear")
         countError++
     } else {
-        println("$singleMarkerAccess Год: $yearFormated")
+        println("$singleMarkerAccess Год: $year")
     }
+    val yearFormated = year.toUShort()
 
     if (pages !in pagesMin..pagesMax) {
         println("$singleMarkerFailed Страниц: $pages - должно быть от $pagesMin до $pagesMax")
