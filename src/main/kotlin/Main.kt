@@ -1,25 +1,44 @@
-package main
 
 fun main() {
     println("Добро пожаловать в библиотеку!\n")
 
     print("Введите название книги: ")
-    val title = readln()
+    val titleInput = readln()
+    val titleTrimm = if (titleInput.length > 30) titleInput.take(27) + "..." else titleInput
+    val titleFinal = when {
+        titleTrimm.isBlank() -> titleInput
+        titleTrimm.any { it.isLetter() } && titleTrimm == titleTrimm.uppercase() -> {
+            println("Название всё капсом, переведём в Title Case")
+            titleTrimm.split(" ")
+                .filter { it.isNotBlank() }
+                .joinToString(" ") { word ->
+                    word.lowercase().replaceFirstChar { it.uppercase() }
+                }
+        }
+        else -> titleTrimm
+    }
 
     print("Введите автора: ")
-    val author = readln()
+    val authorParts = readln().split(" ").filter { it.isNotBlank() }
+    val author = when (authorParts.size) {
+        0 -> "Автор неизвестен"
+        1 -> authorParts[0].replaceFirstChar { it.uppercase() }
+        2 -> "${authorParts[0].first().uppercase()}. ${authorParts[1].replaceFirstChar { it.uppercase() }}"
+        else -> "${authorParts[0].first().uppercase()}. ${authorParts[1].first().uppercase()}. ${authorParts.last().replaceFirstChar { it.uppercase() }}"
+    }
 
     print("Введите год издания: ")
-    val year = readln().toUShort()
-    val startYear: UShort = 1450u
-    val currentYear: UShort = 2026u
+    val yearInput = readln()
+    val year = yearInput.toIntOrNull() ?: error("Год должен быть числом, а не «$yearInput»")
+    val startYear = 1450
+    val currentYear = 2026
 
     print("Введите количество страниц: ")
     val pages = readln().toUShort()
     val pagesMin: UShort = 1u
     val pagesMax: UShort = 10_000u
     val thicknessThin: UShort = 50u
-    val thicknessStandart: UShort = 200u
+    val thicknessStandard: UShort = 200u
     val thicknessBig: UShort = 500u
     val thicknessVeryBig: UShort = 1000u
 
@@ -31,78 +50,126 @@ fun main() {
     val copiesInStock = readln().toInt()
     val copiesInStockMin = 0
 
-    val singleMarkerFaled = '✗'
     val singleMarkerAccess = '✓'
+    val singleMarkerFailed = '✗'
     var countError = 0
 
     println("\nПроверка карточки книги...")
 
     if (year !in startYear..currentYear) {
-        println("$singleMarkerFaled Год $year вне диапазона $startYear..$currentYear")
+        println("$singleMarkerFailed Год $year вне диапазона $startYear..$currentYear")
         countError++
     } else {
         println("$singleMarkerAccess Год: $year")
     }
+    val yearFormated = year.toUShort()
 
     if (pages !in pagesMin..pagesMax) {
-        println("$singleMarkerFaled Страниц: $pages - должно быть от $pagesMin до $pagesMax")
+        println("$singleMarkerFailed Страниц: $pages - должно быть от $pagesMin до $pagesMax")
         countError++
     } else {
         println("$singleMarkerAccess Страниц: $pages")
     }
 
     if (price < priceMin) {
-        println("$singleMarkerFaled Цена $price должна быть положительной")
+        println("$singleMarkerFailed Цена $price должна быть положительной")
         countError++
     } else {
         println("$singleMarkerAccess Цена: $price")
     }
 
-    if (copiesInStockMin >= copiesInStock ) {
-        println("$singleMarkerFaled Экземпляров: $copiesInStock - должно быть больше нуля")
+    if (copiesInStockMin >= copiesInStock) {
+        println("$singleMarkerFailed Экземпляров: $copiesInStock - должно быть больше нуля")
         countError++
     } else {
         println("$singleMarkerAccess  Экземпляров: $copiesInStock")
     }
 
+    var isbnClean: String
+    while (true) {
+        print("Введите ISBN: ")
+        val isbn = readln()
+        isbnClean = isbn.replace("-", "").replace(" ", "")
+
+        if (isbnClean.length == 13) {
+            val allDigits = isbnClean.all { it.isDigit() }
+            if (!allDigits) {
+                println("Ошибка: ISBN должен содержать только цифры")
+                continue
+            }
+
+            var sumEven = 0
+            var sumOdd = 0
+            for (i in isbnClean.indices) {
+                val digit = isbnClean[i].digitToInt()
+
+                if (i % 2 == 0) {
+                    sumEven += digit
+                } else {
+                    sumOdd += digit
+                }
+            }
+
+            val total = sumEven + sumOdd * 3
+            val isValid = total % 10 == 0
+            val controlSummMarker = if (isValid) singleMarkerAccess else singleMarkerFailed
+            val controlSummMess = if (isValid) "(делится на 10)" else "(не делится на 10)"
+            val isbnValidateMess = if (isValid) "валиден" else "не валиден"
+
+            println("""
+                |======== ISBN =======
+                |Очищенный:                 $isbnClean
+                |Длина:                     $singleMarkerAccess   ${isbnClean.length}
+                |Все цифры:                 $singleMarkerAccess
+                |Контрольная сумма:         $controlSummMarker   $total $controlSummMess
+                |ISBN $isbnValidateMess.
+                |=====================
+            """.trimMargin())
+
+            if (!isValid) {
+                countError++
+            }
+            break
+        } else {
+            println("Введенный ISBN не соответствует формату ISBN-13")
+        }
+    }
 
     fun thickness() {
         println("\nСтраниц Категория")
-        when {pages < thicknessThin -> println("\nСтраниц Категория\n< 50 \"Брошюра\"")
-            pages in thicknessThin until thicknessStandart -> println("50..199 \"Стандартная книга\"")
-            pages in thicknessStandart until  thicknessBig -> println("200..499 \"Толстая книга\"")
-            pages in thicknessBig until thicknessVeryBig-> println("500..999 \"Очень толстая книга\"")
+        when {
+            pages < thicknessThin -> println("< 50 \"Брошюра\"")
+            pages in thicknessThin until thicknessStandard -> println("50..199 \"Стандартная книга\"")
+            pages in thicknessStandard until thicknessBig -> println("200..499 \"Толстая книга\"")
+            pages in thicknessBig until thicknessVeryBig -> println("500..999 \"Очень толстая книга\"")
             pages >= thicknessVeryBig -> println("1000 \"Кирпич\"")
         }
     }
 
-    fun printCart() {
+    fun printCart(author: String) {
         println("""
 
             |=== КАРТОЧКА КНИГИ ===
-            |Название:                  $title
+            |Название:                  $titleFinal
             |Автор:                     $author
-            |Год издания:               $year
+            |Год издания:               $yearFormated
             |Кол-во страниц:            $pages
             |Цена:                      ${"%.2f".format(price)} руб.
             |В наличии:                 $copiesInStock шт.
+            |ISBN:                      $isbnClean
             |Общая стоимость на складе: ${"%.2f".format(price * copiesInStock)} руб.
             |======================
         """.trimMargin())
     }
 
-    println()
     if (countError == 0) {
-        println("Итог: принято в каталог")
+        println("\nИтог: принято в каталог")
         thickness()
-        printCart()
+        printCart(author)
     } else {
-        println("Итог: НЕ принято в каталог (количество проблем: $countError )")
+        println("\nИтог: НЕ принято в каталог (количество проблем: $countError )")
     }
 
-    /* Задача 3.
-    // используется for, т.к. известно число итераций и работает break
-    */
     print("\nСколько раз выдать книгу? ")
     val requestsCount = readln().toInt()
     var currentlyOnHand = 0
@@ -121,14 +188,13 @@ fun main() {
 
     println("""
 
-            |=== ФИНАЛЬНАЯ СТАТИСТИКА ВЫДАЧ КНИГИ "$title" ===
+            |=== ФИНАЛЬНАЯ СТАТИСТИКА ВЫДАЧ КНИГИ "$titleTrimm" ===
             |Всего выдач:               $totalLoans
             |Сколько на руках:          $currentlyOnHand
             |Сколько свободно:          ${copiesInStock - currentlyOnHand}
             |======================
     """.trimMargin())
 
-    // Задача 4 (★ бонус). Поиск года
     var attempts = 0
     print("\nИнтерактивная игра \"Поиск года\"")
     while (true) {
@@ -137,17 +203,17 @@ fun main() {
 
         when (userGuess.toInt()) {
             0 -> {
-                println("Выход из игры. Загаданный год: $year")
+                println("Выход из игры. Загаданный год: $yearFormated")
                 break
             }
-            year.toInt() -> {
+            yearFormated.toInt() -> {
                 attempts++
                 println("Угадали! Попыток: $attempts")
                 break
             }
             else -> {
                 attempts++
-                if (userGuess < year) {
+                if (userGuess < yearFormated) {
                     println("Слишком рано")
                 } else {
                     println("Слишком поздно")
