@@ -44,16 +44,12 @@ fun readEdition(): Int? {
 
 fun readIntOrNull(prompt: String, error: String): Int? {
     print(prompt)
-    val value = readln().toIntOrNull()
-    if (value == null) println("  Ошибка: $error\n")
-    return value
+    return readln().toIntOrNull() ?: null.also { println("  Ошибка: $error\n") }
 }
 
 fun readDoubleOrNull(prompt: String, error: String): Double? {
     print(prompt)
-    val value = readln().toDoubleOrNull()
-    if (value == null) println("  Ошибка: $error\n")
-    return value
+    return readln().toDoubleOrNull() ?: null.also { println("  Ошибка: $error\n") }
 }
 
 fun readYear(): Int? = readIntOrNull("Введите год издания: ", "год должен быть числом")
