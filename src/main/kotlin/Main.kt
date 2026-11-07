@@ -39,7 +39,7 @@ fun readTranslator(): String? = readOptionalString("Введите перево�
 
 fun readEdition(): Int? {
     print("Введите номер издания: ")
-    return readln().toIntOrNull()
+    return readln().toIntOrNull()?.takeIf { it > 0 }
 }
 
 fun readIntOrNull(prompt: String, error: String): Int? {
