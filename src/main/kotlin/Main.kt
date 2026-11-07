@@ -29,18 +29,27 @@ fun readAuthor(): String {
     return readln()
 }
 
+fun readOptionalString(prompt: String): String? {
+    print(prompt)
+    return readln().ifBlank { null }
+}
+
+fun readLanguage(): String? = readOptionalString("Язык оригинала (Enter если оригинал на русском): ")
+fun readTranslator(): String? = readOptionalString("Введите переводчика: ")
+
+fun readEdition(): Int? {
+    print("Введите номер издания: ")
+    return readln().toIntOrNull()?.takeIf { it > 0 }
+}
+
 fun readIntOrNull(prompt: String, error: String): Int? {
     print(prompt)
-    val value = readln().toIntOrNull()
-    if (value == null) println("  Ошибка: $error\n")
-    return value
+    return readln().toIntOrNull() ?: null.also { println("  Ошибка: $error\n") }
 }
 
 fun readDoubleOrNull(prompt: String, error: String): Double? {
     print(prompt)
-    val value = readln().toDoubleOrNull()
-    if (value == null) println("  Ошибка: $error\n")
-    return value
+    return readln().toDoubleOrNull() ?: null.also { println("  Ошибка: $error\n") }
 }
 
 fun readYear(): Int? = readIntOrNull("Введите год издания: ", "год должен быть числом")
@@ -49,9 +58,12 @@ fun readPrice(): Double? = readDoubleOrNull("Введите цену (руб.): 
 fun readCopies(): Int? = readIntOrNull("Введите количество экземпляров: ", "количество экземпляров должно быть числом")
 fun readRequestedLoans(): Int? = readIntOrNull("Сколько раз выдать книгу? ", "количество выдач должно быть числом")
 
-fun readIsbn(): String {
-    print("Введите ISBN: ")
-    return readln()
+fun readIsbn(): String? {
+    print("Введите ISBN (Enter если нет ISBN): ")
+    val cleaned = cleanIsbn(readln())
+    val isbn = if (cleaned.isNotBlank() && isValidIsbn(cleaned)) cleaned else null
+    println(describeIsbn(isbn))
+    return isbn
 }
 
 // ========== TITLE ==========
@@ -132,10 +144,16 @@ fun isValidIsbn(isbn: String): Boolean {
     return sum % 10 == 0
 }
 
+// ========== DESCRIBE ISBN (smart cast) ==========
+fun describeIsbn(isbn: String?): String {
+    if (isbn == null) return "ISBN отсутствует"
+    return "Длина ${isbn.length}, GS1 префикс ${isbn.substring(0, 3)}"
+}
+
 // ========== VALIDATION ==========
 fun validateBook(
     title: String, year: Int, pages: Int, price: Double, copies: Int,
-    author: String, isbn: String
+    author: String
 ): List<String> {
     val errors = mutableListOf<String>()
     if (title.isBlank()) errors.add("Название не может быть пустым")
@@ -144,59 +162,46 @@ fun validateBook(
     if (pages <= 0) errors.add("Количество страниц должно быть больше 0")
     if (!pricePositive(price)) errors.add("Цена должна быть положительной")
     if (copies < 0) errors.add("Количество экземпляров не может быть отрицательным")
-    if (!isValidIsbn(isbn)) {
-        val cleaned = cleanIsbn(isbn)
-        val lenOk = cleaned.length == ISBN_13_QUANTITY
-        val digOk = cleaned.isNotEmpty() && cleaned.all { it.isDigit() }
-        val lenM = if (lenOk) SINGLE_MARKER_ACCESS else SINGLE_MARKER_FAILED
-        val digM = if (digOk) SINGLE_MARKER_ACCESS else SINGLE_MARKER_FAILED
-        val digitSum = if (lenOk && digOk) digitsSum(cleaned.toLong()) else null
-        errors.add(
-            "ISBN не валиден:\n   Очищенный: $cleaned\n   Длина: $lenM (${cleaned.length}/$ISBN_13_QUANTITY)\n   Цифры: $digM\n   Сумма цифр: ${digitSum ?: "—"}"
-        )
-    }
     return errors
 }
 
 // ========== OUTPUT ==========
 fun printBookCard(
-    title: String, author: String, year: Int, pages: Int, price: Double,
-    copies: Int, isbn: String, isbnDigitsSum: Int, withFancyFrame: Boolean = false
+    title: String, author: String, year: Int, pages: Int, price: Double, copies: Int,
+    isbn: String?, language: String?, translator: String?, edition: Int?,
+    withFancyFrame: Boolean = false
 ) {
-    if (withFancyFrame) {
-        val frameWidth = 67
-        val border = "═".repeat(frameWidth - 2)
-        val row: (String) -> String = { "║  $it".padEnd(frameWidth - 1) + "║" }
+    val body = mutableListOf(
+        "Название:                  $title",
+        "Автор:                     $author",
+        "Год издания:               $year",
+        "Кол-во страниц:            $pages (${categorizePages(pages)})",
+        "Цена:                      ${formatPrice(price)}",
+        "В наличии:                 $copies шт.",
+        "Общая стоимость на складе: ${formatPrice(price * copies)}",
+    )
+    language?.let { body.add("Язык оригинала:            $it") }
+    translator?.let { body.add("Переводчик:                $it") }
+    body.add("Издание:                   ${edition ?: "не указано"}")
+    isbn?.let {
+        body.add("ISBN:                      $it")
+        body.add("Сумма цифр ISBN:           ${digitsSum(it.toLong())}")
+    }
 
+    if (withFancyFrame) {
+        val frameWidth = 69
+        val border = "═".repeat(frameWidth - 2)
         println("╔$border╗")
-        println(row("--- КАРТОЧКА КНИГИ  ---"))
+        println("║  --- КАРТОЧКА КНИГИ  ---".padEnd(frameWidth - 1) + "║")
         println("╠$border╣")
-        println(row("Название:                  $title"))
-        println(row("Автор:                     $author"))
-        println(row("Год издания:               $year"))
-        println(row("Кол-во страниц:            $pages (${categorizePages(pages)})"))
-        println(row("Цена:                      ${formatPrice(price)}"))
-        println(row("В наличии:                 $copies шт."))
-        println(row("Общая стоимость на складе: ${formatPrice(price * copies)}"))
-        println(row("ISBN:                      $isbn"))
-        println(row("Сумма цифр ISBN:           $isbnDigitsSum"))
+        for (line in body) {
+            println("║  $line".padEnd(frameWidth - 1) + "║")
+        }
         println("╚$border╝")
     } else {
-        println(
-            """
-            |=== КАРТОЧКА КНИГИ ===
-            |Название:                  $title
-            |Автор:                     $author
-            |Год издания:               $year
-            |Кол-во страниц:            $pages (${categorizePages(pages)})
-            |Цена:                      ${formatPrice(price)}
-            |В наличии:                 $copies шт.
-            |Общая стоимость на складе: ${formatPrice(price * copies)}
-            |ISBN:                      $isbn
-            |Сумма цифр ISBN:           $isbnDigitsSum
-            |======================
-            """.trimMargin()
-        )
+        println("=== КАРТОЧКА КНИГИ ===")
+        body.forEach { println(it) }
+        println("======================")
     }
 }
 
@@ -206,13 +211,16 @@ fun main() {
     while (true) {
         val title = readTitle()
         val author = readAuthor()
+        val language = readLanguage()
+        val translator = readTranslator()
+        val edition = readEdition()
         val year = readYear() ?: continue
         val pages = readPages() ?: continue
         val price = readPrice() ?: continue
         val copies = readCopies() ?: continue
         val isbn = readIsbn()
 
-        val errors = validateBook(title, year, pages, price, copies, author, isbn)
+        val errors = validateBook(title, year, pages, price, copies, author)
         if (errors.isNotEmpty()) {
             println("\n\u26a0\ufe0f ИНФОРМАЦИЯ О КНИГЕ СОДЕРЖИТ НЕВЕРНЫЕ ДАННЫЕ:")
             errors.forEach { println("   $it") }
@@ -222,10 +230,8 @@ fun main() {
 
         val authorName = makeAuthorInitials(author)
         val shortTitle = makeShortTitle(title)
-        val cleanedIsbn = cleanIsbn(isbn)
-        val sumDigits = digitsSum(cleanedIsbn.toLong())
-        printBookCard(shortTitle, authorName, year, pages, price, copies, cleanedIsbn, sumDigits)
-        printBookCard(shortTitle, authorName, year, pages, price, copies, cleanedIsbn, sumDigits, withFancyFrame = true)
+        printBookCard(shortTitle, authorName, year, pages, price, copies, isbn, language, translator, edition)
+        printBookCard(shortTitle, authorName, year, pages, price, copies, isbn, language, translator, edition, withFancyFrame = true)
         println("$SINGLE_MARKER_ACCESS Книга успешно добавлена!")
 
         println("\n--- Симуляция выдачи ---")
