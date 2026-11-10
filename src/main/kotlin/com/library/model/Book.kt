@@ -1,14 +1,17 @@
 package com.library.model
 
-import com.library.util.pageCategorize
+import com.library.common.TITLE_SYMBOL_MAX
+import com.library.common.YEAR_END
+import com.library.common.YEAR_START
+import com.library.util.authorSplit
+import com.library.util.digitsSum
 import com.library.util.priceFormat
-import com.library.util.SINGLE_MARKER_ACCESS
 
 abstract class Book(
     val title: String,
     val author: String,
-    val year: UShort,
-    val pages: UShort,
+    val year: Int,
+    val pages: Int,
     val price: Double,
     initialCopies: Int,
     val isbn: String? = null,
@@ -17,22 +20,34 @@ abstract class Book(
     val translator: String? = null
 ) : Loanable {
     var copiesInStock: Int = initialCopies
-        protected set // менять можно только изнутри класса
+        protected set // менять можно только изнутри класса и наследникам
     var totalLoans: Int = 0
         protected set
 
-    abstract val category: String
+    abstract val category: String // каждый подкласс задаёт свою
 
     init {
         require(title.isNotBlank()) { "Название не может быть пустым" }
-        require(year in 1450u..2100u) { "Год $year вне допустимого диапазона" }
-        require(pages >= 0u.toUShort()) { "Страниц должно быть положительно, а не $pages" }
+        require(year in YEAR_START..YEAR_END) { "Год $year вне допустимого диапазона" }
+        require(pages >= 0) { "Количество страниц не может быть отрицательным" }
         require(price >= 0) { "Цена не может быть отрицательной" }
         require(initialCopies >= 0) { "Количество экземпляров не может быть отрицательным" }
     }
 
     override val isAvailable: Boolean
         get() = copiesInStock > 0
+
+    val shortTitle: String
+        get() {
+            val trimmed =
+                if (title.length > TITLE_SYMBOL_MAX) title.take(TITLE_SYMBOL_MAX - 3) + "..." else title
+            if (trimmed.isBlank()) return trimmed
+            return if (trimmed == trimmed.uppercase()) {
+                trimmed.split(" ").joinToString(" ") { word ->
+                    word.lowercase().replaceFirstChar { it.uppercase() }
+                }
+            } else trimmed
+        }
 
     override fun lend(): Boolean {
         if (copiesInStock <= 0) return false
@@ -45,25 +60,37 @@ abstract class Book(
         copiesInStock++
     }
 
-    open fun printCard() {
-        println(
-                """
-            |
-            |=== КАРТОЧКА КНИГИ ===
-            |Название:                  $title
-            |Автор:                     $author
-            |Год издания:               $year
-            |Кол-во страниц:            $pages (${pageCategorize(pages)})
-            |Цена:                      ${priceFormat(price)}
-            |В наличии:                 $copiesInStock шт.
-            |Общая стоимость на складе: ${priceFormat(price * copiesInStock)}
-        """.trimMargin()
+    open fun printCard(withFancyFrame: Boolean = false) {
+        val body = mutableListOf(
+            "Название:                  $shortTitle",
+            "Автор:                     ${authorSplit(author)}",
+            "Год издания:               $year",
+            "Цена:                      ${priceFormat(price)}",
+            "В наличии:                 $copiesInStock шт.",
+            "Общая стоимость на складе: ${priceFormat(price * copiesInStock)}",
         )
-        originalLanguage?.let { println("Язык оригинала:            $it") }
-        translator?.let { println("Переводчик:                $it") }
-        edition?.let { println("Издание:                   $it") }
-        isbn?.let { println("ISBN:                      $it") }
-        println("$SINGLE_MARKER_ACCESS Книга успешно добавлена!")
-        println("======================")
+        originalLanguage?.let { body.add("Язык оригинала:            $it") }
+        translator?.let { body.add("Переводчик:                $it") }
+        body.add("Издание:                   ${edition ?: "не указано"}")
+        isbn?.let {
+            body.add("ISBN:                      $it")
+            body.add("Сумма цифр ISBN:           ${digitsSum(it.toLong())}")
+        }
+
+        if (withFancyFrame) {
+            val frameWidth = 69
+            val border = "═".repeat(frameWidth - 2)
+            println("╔$border╗")
+            println("║  --- КАРТОЧКА КНИГИ  ---".padEnd(frameWidth - 1) + "║")
+            println("╠$border╣")
+            for (line in body) {
+                println("║  ${line.take(frameWidth - 4)}".padEnd(frameWidth - 1) + "║")
+            }
+            println("╚$border╝")
+        } else {
+            println("=== КАРТОЧКА КНИГИ ===")
+            body.forEach { println(it) }
+            println("======================")
+        }
     }
 }
