@@ -7,9 +7,12 @@ fun main() {
     val book = readBookData() ?: return
 
     println("$SINGLE_MARKER_ACCESS Книга успешно добавлена!")
+    println()
 
     book.printCard()
+    println()
     book.printCard(withFancyFrame = true)
+    println()
 
     repeat(5) { i ->
         val ok = book.lend()

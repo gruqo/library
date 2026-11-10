@@ -1,6 +1,6 @@
 package com.library.model
 
-import com.library.common.TITLE_SIMBOL_MAX
+import com.library.common.TITLE_SYMBOL_MAX
 import com.library.common.YEAR_END
 import com.library.common.YEAR_START
 import com.library.util.authorSplit
@@ -45,7 +45,7 @@ class Book(
     val shortTitle: String
         get() {
             val trimmed =
-                if (title.length > TITLE_SIMBOL_MAX) title.take(TITLE_SIMBOL_MAX - 3) + "..." else title
+                if (title.length > TITLE_SYMBOL_MAX) title.take(TITLE_SYMBOL_MAX - 3) + "..." else title
             if (trimmed.isBlank()) return trimmed
             return if (trimmed == trimmed.uppercase()) {
                 trimmed.split(" ").joinToString(" ") { word ->
@@ -90,7 +90,7 @@ class Book(
             println("║  --- КАРТОЧКА КНИГИ  ---".padEnd(frameWidth - 1) + "║")
             println("╠$border╣")
             for (line in body) {
-                println("║  $line".padEnd(frameWidth - 1) + "║")
+                println("║  ${line.take(frameWidth - 4)}".padEnd(frameWidth - 1) + "║")
             }
             println("╚$border╝")
         } else {

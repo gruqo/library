@@ -1,7 +1,7 @@
 package com.library.common
 
 // ========== TITLE ==========
-const val TITLE_SIMBOL_MAX = 30
+const val TITLE_SYMBOL_MAX = 30
 
 // ========== YEAR ==========
 const val YEAR_START: Int = 1450
