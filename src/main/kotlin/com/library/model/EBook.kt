@@ -13,7 +13,6 @@ class EBook(
     title = title,
     author = author,
     year = year,
-    pages = 0,
     price = price,
     initialCopies = initialCopies,
     isbn = isbn
@@ -21,13 +20,15 @@ class EBook(
     override val category = "Электронная книга"
 
     override fun lend(): Boolean {
-        // «бесконечная лицензия»: экземпляры не расходуются, но выдача учитывается
         totalLoans++
         return true
     }
 
     override fun returnCopy() {
-        // у электронной книги нечего возвращать
+    }
+
+    override fun printStock(emit: (String) -> Unit) {
+        emit("В наличии:                 без ограничений")
     }
 
     override fun printCard(withFancyFrame: Boolean) {

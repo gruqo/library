@@ -16,7 +16,7 @@ fun main() {
         ),
     )
     for (item in items) {
-        if (item is Book) item.printCard() // smart cast в Book
+        if (item is Book) item.printCard()
         println("Статус: ${item.describeAvailability()}")
         item.lend()
         println("После выдачи: ${item.describeAvailability()}")

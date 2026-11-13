@@ -5,15 +5,14 @@ class AudioBook(
     author: String,
     year: Int,
     price: Double,
+    initialCopies: Int,
     val durationMinutes: Int,
     val narrator: String,
-    isbn: String? = null,
-    initialCopies: Int = Int.MAX_VALUE
+    isbn: String? = null
 ) : Book(
     title = title,
     author = author,
     year = year,
-    pages = 0,
     price = price,
     initialCopies = initialCopies,
     isbn = isbn
