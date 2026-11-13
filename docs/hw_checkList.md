@@ -10,7 +10,7 @@
 | 04 | 1.ISBN-13: добавить и провалидировать<br>2.Обработка названия<br>3.Float vs Double — ловушка<br>4(★ бонус). Конвертация года из строки | ✓ | [05](https://github.com/gruqo/library/pull/5) | - |
 | 05 | 1.Декомпозиция main()<br>2.Default и named аргументы<br>3.Рекурсия — сумма цифр ISBN | ✓ | [06](https://github.com/gruqo/library/pull/6) | - |
 | 06 | 1.Опциональные поля в карточке<br>2.Безопасный вывод карточки<br>3.Smart cast в действии | ✓ | [07](https://github.com/gruqo/library/pull/7) | - |
-| 07 | 1.Класс Book<br>2.Методы класса<br>3.Использование класса<br>4.Структура пакетов<br>5.Вторичный конструктор |  | [XX]() |  |
+| 07 | 1.Класс Book<br>2.Методы класса<br>3.Использование класса<br>4.Структура пакетов<br>5.Вторичный конструктор |  | [08](https://github.com/gruqo/library/pull/8) |  |
 | 08 | 1.abstract Book<br>2.Три подкласса<br>3.Loanable<br>4.Полиморфный сценарий |  | [XX]() |   |
 | 09 | 1.enum Genre<br>2.sealed LoanResult<br>3.data Money<br>4.object Registry<br>5.companion |  | [XX]() |   |
 | 10 | 1.Library<br>2.Тэги Set<br>3.ISBN Map<br>4.Map<Genre, List><br>5.Полки-массив<br>6.main() |  | [XX]() |  |

@@ -1,6 +1,6 @@
 package com.library.io
 
-import com.library.model.Book
+import com.library.model.PrintedBook
 import com.library.util.cleanIsbn
 import com.library.util.describeIsbn
 import com.library.util.isValidIsbn
@@ -33,7 +33,7 @@ private fun readIsbn(): String? {
     return isbn
 }
 
-fun readBookData(): Book? {
+fun readBookData(): PrintedBook? {
     println("Добро пожаловать в библиотеку!\n")
 
     print("Введите название книги: ")
@@ -52,13 +52,13 @@ fun readBookData(): Book? {
     val copies = readIntOrNull("Введите количество экземпляров: ", "Количество экземпляров должно быть числом") ?: return null
     val isbn = readIsbn()
 
-    return Book(
+    return PrintedBook(
         title = title,
         author = author,
         year = year,
-        pages = pages,
         price = price,
         initialCopies = copies,
+        pages = pages,
         isbn = isbn,
         edition = edition,
         originalLanguage = originalLanguage,
