@@ -1,17 +1,39 @@
 package com.library.model
 
+import com.library.util.pageCategorize
+
 class PrintedBook(
-    title: String, author: String, year: UShort, pages: UShort, price: Money, copies: Int
-) : Book(title, author, year, pages, price, copies) {
-
-    constructor(
-        title: String, author: String, year: Int, price: Money, copies: Int, pages: Int
-    ) : this(title, author, year.toUShort(), pages.toUShort(), price, copies)
-
+    title: String,
+    author: String,
+    year: Int,
+    price: Money,
+    initialCopies: Int,
+    val pages: Int,
+    isbn: String? = null,
+    edition: Int? = null,
+    originalLanguage: String? = null,
+    translator: String? = null,
+    genre: Genre = Genre.OTHER
+) : Book(
+    title = title,
+    author = author,
+    year = year,
+    price = price,
+    initialCopies = initialCopies,
+    isbn = isbn,
+    edition = edition,
+    originalLanguage = originalLanguage,
+    translator = translator,
+    genre = genre
+) {
     override val category = "Печатная книга"
-    init { require(pages > 0u) { "Страниц должно быть положительно" } }
-    override fun printCard() {
-        super.printCard()
-        println("Страниц: $pages")
+
+    init {
+        require(pages > 0) { "Страниц должно быть положительно" }
+    }
+
+    override fun printCard(withFancyFrame: Boolean) {
+        super.printCard(withFancyFrame)
+        println("Страниц: $pages (${pageCategorize(pages)})")
     }
 }
