@@ -22,13 +22,11 @@ class EBook(
     override val category = "Электронная книга"
 
     override fun lend(): LoanResult {
-        // «бесконечная лицензия»: экземпляры не расходуются, но выдача учитывается
         totalLoans++
         return LoanResult.Success
     }
 
     override fun returnCopy() {
-        // у электронной книги нечего возвращать
     }
 
     override fun printStock(emit: (String) -> Unit) {

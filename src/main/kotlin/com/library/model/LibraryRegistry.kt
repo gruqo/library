@@ -1,7 +1,7 @@
 package com.library.model
 
 object LibraryRegistry {
-    private val books = mutableListOf<Book>() // мы используем List, который ещё не проходили
+    private val books = mutableListOf<Book>()
     fun register(book: Book) {
         books.add(book)
         println("Добавлено в каталог: ${book.title}")

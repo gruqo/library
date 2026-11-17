@@ -5,7 +5,6 @@ import com.library.common.YEAR_END
 import com.library.common.YEAR_START
 import com.library.util.authorSplit
 import com.library.util.digitsSum
-import com.library.util.priceFormat
 
 abstract class Book(
     val title: String,
@@ -20,7 +19,7 @@ abstract class Book(
     val genre: Genre = Genre.OTHER
 ) : Loanable {
     var copiesInStock: Int = initialCopies
-        protected set // protected: менять можно внутри Book и в наследниках (нужно EBook.lend())
+        protected set
     var totalLoans: Int = 0
         protected set
 
@@ -31,12 +30,11 @@ abstract class Book(
         fun isValidYear(year: Int): Boolean = year in MIN_YEAR..MAX_YEAR
     }
 
-    abstract val category: String // каждый подкласс задаёт свою
+    abstract val category: String
 
     init {
         require(title.isNotBlank()) { "Название не может быть пустым" }
         require(Book.isValidYear(year)) { "Год $year вне допустимого диапазона" }
-        require(price.amount >= 0) { "Цена не может быть отрицательной" }
         require(initialCopies >= 0) { "Количество экземпляров не может быть отрицательным" }
     }
 
@@ -66,14 +64,9 @@ abstract class Book(
         copiesInStock++
     }
 
-    /**
-     * Строки о наличии на складе. Вынесены отдельно, потому что у EBook
-     * «Int.MAX_VALUE экземпляров» — это на самом деле лицензия без ограничений.
-     * emit — куда складывать строки, чтобы они попали и в обычную карточку, и в рамку.
-     */
     protected open fun printStock(emit: (String) -> Unit) {
         emit("В наличии:                 $copiesInStock шт.")
-        emit("Общая стоимость на складе: ${priceFormat(price.amount * copiesInStock)}")
+        emit("Общая стоимость на складе: ${price.copy(amount = price.amount * copiesInStock)}")
     }
 
     open fun printCard(withFancyFrame: Boolean = false) {
@@ -83,7 +76,7 @@ abstract class Book(
             "Автор:                     ${authorSplit(author)}",
             "Год издания:               $year",
             "Жанр:                      ${genre.emoji} ${genre.displayName}",
-            "Цена:                      ${priceFormat(price.amount)}",
+            "Цена:                      $price",
         )
         printStock { body.add(it) }
         originalLanguage?.let { body.add("Язык оригинала:            $it") }
