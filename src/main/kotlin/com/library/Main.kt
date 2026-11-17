@@ -1,24 +1,25 @@
 package com.library
 
-import com.library.common.SINGLE_MARKER_ACCESS
-import com.library.io.readBookData
+import com.library.model.AudioBook
+import com.library.model.Book
+import com.library.model.EBook
+import com.library.model.Loanable
+import com.library.model.PrintedBook
 
 fun main() {
-    val book = readBookData() ?: return
-
-    println("$SINGLE_MARKER_ACCESS Книга успешно добавлена!")
-    println()
-
-    book.printCard()
-    println()
-    book.printCard(withFancyFrame = true)
-    println()
-
-    repeat(5) { i ->
-        val ok = book.lend()
-        println("Выдача ${i + 1}: ${if (ok) "ок, осталось ${book.copiesInStock}" else "отказ"}")
+    val items: List<Loanable> = listOf(
+        PrintedBook("Чистый код", "Р. Мартин", 2008, 1290.0, 3, pages = 464),
+        EBook("Kotlin in Action", "Д. Жемеров", 2017, 990.0, sizeMb = 12.5, format = "PDF"),
+        AudioBook(
+            "Гарри Поттер", "Дж. Роулинг", 1997, 599.0,
+            initialCopies = 2, durationMinutes = 480, narrator = "С. Чонишвили"
+        ),
+    )
+    for (item in items) {
+        if (item is Book) item.printCard()
+        println("Статус: ${item.describeAvailability()}")
+        item.lend()
+        println("После выдачи: ${item.describeAvailability()}")
+        println("---")
     }
-
-    book.returnCopy()
-    println("После возврата: ${book.copiesInStock}, всего выдач: ${book.totalLoans}")
 }
