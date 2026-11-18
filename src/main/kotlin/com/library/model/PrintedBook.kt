@@ -13,7 +13,8 @@ class PrintedBook(
     edition: Int? = null,
     originalLanguage: String? = null,
     translator: String? = null,
-    genre: Genre = Genre.OTHER
+    genre: Genre = Genre.OTHER,
+    tags: Set<String> = emptySet()
 ) : Book(
     title = title,
     author = author,
@@ -24,7 +25,8 @@ class PrintedBook(
     edition = edition,
     originalLanguage = originalLanguage,
     translator = translator,
-    genre = genre
+    genre = genre,
+    tags = tags
 ) {
     override val category = "Печатная книга"
 

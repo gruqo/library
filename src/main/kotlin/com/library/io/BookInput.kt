@@ -1,5 +1,6 @@
 package com.library.io
 
+import com.library.model.Genre
 import com.library.model.Money
 import com.library.model.PrintedBook
 import com.library.util.cleanIsbn
@@ -34,6 +35,20 @@ private fun readIsbn(): String? {
     return isbn
 }
 
+private fun readGenre(): Genre {
+    print("Введите жанр (${Genre.entries.joinToString(", ") { it.name }}): ")
+    return Genre.fromString(readln())
+}
+
+private fun readTags(): Set<String> {
+    print("Введите теги через запятую (Enter если тегов нет): ")
+    return readln()
+        .split(",")
+        .map { it.trim() }
+        .filter { it.isNotBlank() }
+        .toSet()
+}
+
 fun readBookData(): PrintedBook? {
     println("Добро пожаловать в библиотеку!\n")
 
@@ -52,6 +67,8 @@ fun readBookData(): PrintedBook? {
     val price = readDoubleOrNull("Введите цену (руб.): ", "Цена должна быть числом") ?: return null
     val copies = readIntOrNull("Введите количество экземпляров: ", "Количество экземпляров должно быть числом") ?: return null
     val isbn = readIsbn()
+    val genre = readGenre()
+    val tags = readTags()
 
     return PrintedBook(
         title = title,
@@ -63,6 +80,8 @@ fun readBookData(): PrintedBook? {
         isbn = isbn,
         edition = edition,
         originalLanguage = originalLanguage,
-        translator = translator
+        translator = translator,
+        genre = genre,
+        tags = tags
     )
 }

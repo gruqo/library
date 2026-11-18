@@ -9,7 +9,8 @@ class EBook(
     val sizeMb: Double,
     isbn: String? = null,
     initialCopies: Int = Int.MAX_VALUE,
-    genre: Genre = Genre.OTHER
+    genre: Genre = Genre.OTHER,
+    tags: Set<String> = emptySet()
 ) : Book(
     title = title,
     author = author,
@@ -17,7 +18,8 @@ class EBook(
     price = price,
     initialCopies = initialCopies,
     isbn = isbn,
-    genre = genre
+    genre = genre,
+    tags = tags
 ) {
     override val category = "Электронная книга"
 

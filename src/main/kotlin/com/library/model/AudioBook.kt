@@ -9,7 +9,8 @@ class AudioBook(
     val durationMinutes: Int,
     val narrator: String,
     isbn: String? = null,
-    genre: Genre = Genre.OTHER
+    genre: Genre = Genre.OTHER,
+    tags: Set<String> = emptySet()
 ) : Book(
     title = title,
     author = author,
@@ -17,7 +18,8 @@ class AudioBook(
     price = price,
     initialCopies = initialCopies,
     isbn = isbn,
-    genre = genre
+    genre = genre,
+    tags = tags
 ) {
     override val category = "Аудиокнига"
 

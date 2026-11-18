@@ -16,7 +16,8 @@ abstract class Book(
     val edition: Int? = null,
     val originalLanguage: String? = null,
     val translator: String? = null,
-    val genre: Genre = Genre.OTHER
+    val genre: Genre = Genre.OTHER,
+    val tags: Set<String> = emptySet()
 ) : Loanable {
     var copiesInStock: Int = initialCopies
         protected set
@@ -86,6 +87,7 @@ abstract class Book(
             body.add("ISBN:                      $it")
             body.add("Сумма цифр ISBN:           ${digitsSum(it.toLong())}")
         }
+        if (tags.isNotEmpty()) body.add("Тэги:                      ${tags.joinToString(", ")}")
 
         if (withFancyFrame) {
             val frameWidth = 69

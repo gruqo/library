@@ -1,49 +1,63 @@
 package com.library
 
-import com.library.model.AudioBook
-import com.library.model.Book
 import com.library.model.EBook
 import com.library.model.Genre
-import com.library.model.LibraryRegistry
-import com.library.model.LoanResult
-import com.library.model.Loanable
+import com.library.model.Library
 import com.library.model.Money
 import com.library.model.PrintedBook
 
 fun main() {
-    val items: List<Loanable> = listOf(
-        PrintedBook(
-            "Чистый код", "Р. Мартин", 2008, Money(1290.0), 3,
-            pages = 464, genre = Genre.PROGRAMMING
-        ),
-        EBook(
-            "Kotlin in Action", "Д. Жемеров", 2017, Money(990.0),
-            sizeMb = 12.5, format = "PDF", genre = Genre.PROGRAMMING
-        ),
-        AudioBook(
-            "Гарри Поттер", "Дж. Роулинг", 1997, Money(599.0),
-            initialCopies = 2, durationMinutes = 480, narrator = "С. Чонишвили",
-            genre = Genre.FICTION
-        ),
+    val lib = Library("Городская библиотека №1", rows = 3, cols = 5)
+
+    val cleanCode = PrintedBook(
+        "Чистый код",
+        "Р. Мартин",
+        2008,
+        Money(1290.0),
+        3,
+        pages = 464,
+        isbn = "9785916719892",
+        genre = Genre.PROGRAMMING,
+        tags = setOf("classic", "must-read")
     )
 
-    items.filterIsInstance<Book>().forEach { LibraryRegistry.register(it) }
-    println()
+    val kotlinAction = EBook(
+        "Kotlin in Action",
+        "Д. Жемеров",
+        2017,
+        Money(990.0),
+        sizeMb = 12.5,
+        format = "PDF",
+        isbn = "9781617293290",
+        genre = Genre.PROGRAMMING
+    )
 
-    for (item in items) {
-        if (item is Book) item.printCard() // smart cast в Book
-        println("Статус: ${item.describeAvailability()}")
+    val warAndPeace = PrintedBook(
+        "Война и мир",
+        "Л. Толстой",
+        1869,
+        Money(750.0),
+        2,
+        pages = 1225,
+        isbn = "9785170123469",
+        genre = Genre.FICTION,
+        tags = setOf("classic", "russian")
+    )
 
-        when (val result = item.lend()) {
-            is LoanResult.Success -> println("✓ Выдано")
-            is LoanResult.NotAvailable -> println("✗ Нет в наличии (доступно: ${result.available})")
-            is LoanResult.TooManyOnHand -> println("✗ Превышен лимит ${result.limit}")
-            is LoanResult.BookNotInLibrary -> println("✗ Книги нет в каталоге")
-        }
+    lib.addBook(cleanCode)
+    lib.addBook(kotlinAction)
+    lib.addBook(warAndPeace)
 
-        println("После выдачи: ${item.describeAvailability()}")
-        println("---")
+    println(lib)
+    println("Всего: ${lib.size}")
+    println("По ISBN 9785916719892: ${lib.findByIsbn("9785916719892")?.title}")
+
+    lib.place(cleanCode, 0, 0)
+    lib.place(warAndPeace, 0, 1)
+    lib.printShelves()
+
+    println("\nПо жанрам:")
+    for ((genre, list) in lib.byGenre()) {
+        println("${genre.displayName}: ${list.joinToString { it.title }}")
     }
-
-    println(LibraryRegistry.summary())
 }
