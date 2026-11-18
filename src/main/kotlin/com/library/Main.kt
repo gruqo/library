@@ -1,6 +1,10 @@
 package com.library
 
-import com.library.model.*
+import com.library.model.EBook
+import com.library.model.Genre
+import com.library.model.Library
+import com.library.model.Money
+import com.library.model.PrintedBook
 
 fun main() {
     val lib = Library("Городская библиотека №1", rows = 3, cols = 5)
@@ -22,7 +26,6 @@ fun main() {
         "Д. Жемеров",
         2017,
         Money(990.0),
-        pages = 464,
         sizeMb = 12.5,
         format = "PDF",
         isbn = "9781617293290",
@@ -54,7 +57,6 @@ fun main() {
     lib.printShelves()
 
     println("\nПо жанрам:")
-
     for ((genre, list) in lib.byGenre()) {
         println("${genre.displayName}: ${list.joinToString { it.title }}")
     }
