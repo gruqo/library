@@ -4,18 +4,20 @@ class AudioBook(
     title: String,
     author: String,
     year: Int,
-    price: Double,
+    price: Money,
     initialCopies: Int,
     val durationMinutes: Int,
     val narrator: String,
-    isbn: String? = null
+    isbn: String? = null,
+    genre: Genre = Genre.OTHER
 ) : Book(
     title = title,
     author = author,
     year = year,
     price = price,
     initialCopies = initialCopies,
-    isbn = isbn
+    isbn = isbn,
+    genre = genre
 ) {
     override val category = "Аудиокнига"
 

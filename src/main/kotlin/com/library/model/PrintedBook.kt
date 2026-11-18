@@ -6,13 +6,14 @@ class PrintedBook(
     title: String,
     author: String,
     year: Int,
-    price: Double,
+    price: Money,
     initialCopies: Int,
     val pages: Int,
     isbn: String? = null,
     edition: Int? = null,
     originalLanguage: String? = null,
-    translator: String? = null
+    translator: String? = null,
+    genre: Genre = Genre.OTHER
 ) : Book(
     title = title,
     author = author,
@@ -22,7 +23,8 @@ class PrintedBook(
     isbn = isbn,
     edition = edition,
     originalLanguage = originalLanguage,
-    translator = translator
+    translator = translator,
+    genre = genre
 ) {
     override val category = "Печатная книга"
 

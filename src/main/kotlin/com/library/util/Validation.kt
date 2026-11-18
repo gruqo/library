@@ -27,9 +27,6 @@ fun pageCategorize(pages: Int): String = when {
     else -> "Толщина не определена"
 }
 
-// ========== PRICE ==========
-fun priceFormat(price: Double): String = "%.2f руб.".format(price)
-
 fun cleanIsbn(rawIsbn: String): String = rawIsbn.replace("-", "").replace(" ", "")
 
 fun digitsSum(n: Long): Int =

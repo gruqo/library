@@ -1,5 +1,6 @@
 package com.library.io
 
+import com.library.model.Money
 import com.library.model.PrintedBook
 import com.library.util.cleanIsbn
 import com.library.util.describeIsbn
@@ -56,7 +57,7 @@ fun readBookData(): PrintedBook? {
         title = title,
         author = author,
         year = year,
-        price = price,
+        price = Money(price),
         initialCopies = copies,
         pages = pages,
         isbn = isbn,
