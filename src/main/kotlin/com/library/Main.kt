@@ -48,7 +48,7 @@ fun main() {
     lib.addBook(kotlinAction)
     lib.addBook(warAndPeace)
 
-    println(lib) // toString
+    println(lib)
     println("Всего: ${lib.size}")
     println("По ISBN 9785916719892: ${lib.findByIsbn("9785916719892")?.title}")
 

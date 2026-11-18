@@ -1,23 +1,27 @@
 package com.library.model
 
-class Library(val name: String, rows: Int = 5, cols: Int = 5) {
+class Library(val name: String, rows: Int = 5, cols: Int = 10) {
     private val books: MutableList<Book> = mutableListOf()
     private val byIsbn = mutableMapOf<String, Book>()
 
     fun addBook(book: Book) {
-        books.add(book)
         book.isbn?.let { isbn ->
             require(isbn !in byIsbn) { "Книга с ISBN $isbn уже есть в каталоге" }
             byIsbn[isbn] = book
         }
+        books.add(book)
     }
 
     fun findByIsbn(isbn: String): Book? = byIsbn[isbn]
     fun hasIsbn(isbn: String): Boolean = isbn in byIsbn
 
-    fun removeBook(book: Book): Boolean = books.remove(book)
+    fun removeBook(book: Book): Boolean {
+        val removed = books.remove(book)
+        if (removed) book.isbn?.let { byIsbn.remove(it) }
+        return removed
+    }
     val size: Int get() = books.size
-    fun all(): List<Book> = books.toList() // возвращаем КОПИЮ как read-only
+    fun all(): List<Book> = books.toList()
     override fun toString(): String = "Библиотека «$name» ($size книг)"
 
     fun byGenre(): Map<Genre, List<Book>> {
@@ -26,7 +30,7 @@ class Library(val name: String, rows: Int = 5, cols: Int = 5) {
             val list = result.getOrPut(book.genre) { mutableListOf() }
             list.add(book)
         }
-        return result // вернётся как Map<Genre, List<Book>> (List — супертип MutableList)
+        return result
     }
 
     private val shelves: Array<Array<String?>> = Array(rows) { arrayOfNulls(cols) }
