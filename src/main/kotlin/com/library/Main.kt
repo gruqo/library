@@ -22,7 +22,6 @@ fun main() {
         "Д. Жемеров",
         2017,
         Money(990.0),
-        pages = 464,
         sizeMb = 12.5,
         format = "PDF",
         isbn = "9781617293290",

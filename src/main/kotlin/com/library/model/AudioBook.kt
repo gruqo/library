@@ -1,20 +1,30 @@
 package com.library.model
 
 class AudioBook(
-    title: String, author: String, year: UShort, price: Money,
-    isbn: String? = null, val durationMinutes: Int, val narrator: String,
-    initialCopies: Int = Int.MAX_VALUE
-) : Book(title, author, year, 0u.toUShort(), price, initialCopies, isbn = isbn) {
-
-    constructor(
-        title: String, author: String, year: Int, price: Money,
-        durationMinutes: Int, narrator: String, initialCopies: Int = Int.MAX_VALUE
-    ) : this(title, author, year.toUShort(), price,
-        durationMinutes = durationMinutes, narrator = narrator, initialCopies = initialCopies)
-
+    title: String,
+    author: String,
+    year: Int,
+    price: Money,
+    initialCopies: Int,
+    val durationMinutes: Int,
+    val narrator: String,
+    isbn: String? = null,
+    genre: Genre = Genre.OTHER,
+    tags: Set<String> = emptySet()
+) : Book(
+    title = title,
+    author = author,
+    year = year,
+    price = price,
+    initialCopies = initialCopies,
+    isbn = isbn,
+    genre = genre,
+    tags = tags
+) {
     override val category = "Аудиокнига"
-    override fun printCard() {
-        super.printCard()
+
+    override fun printCard(withFancyFrame: Boolean) {
+        super.printCard(withFancyFrame)
         val hours = durationMinutes / 60
         val mins = durationMinutes % 60
         println("Длительность: ${hours}ч ${mins}мин, читает $narrator")
