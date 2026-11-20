@@ -13,7 +13,7 @@
 | 07 | 1.Класс Book<br>2.Методы класса<br>3.Использование класса<br>4.Структура пакетов<br>5.Вторичный конструктор |✓| [08](https://github.com/gruqo/library/pull/8) |  |
 | 08 | 1.abstract Book<br>2.Три подкласса<br>3.Loanable<br>4.Полиморфный сценарий | ✓ | [09](https://github.com/gruqo/library/pull/9) |   |
 | 09 | 1.enum Genre<br>2.sealed LoanResult<br>3.data Money<br>4.object Registry<br>5.companion |✓| [10](https://github.com/gruqo/library/pull/10) |   |
-| 10 | 1.Library<br>2.Тэги Set<br>3.ISBN Map<br>4.Map<Genre, List><br>5.Полки-массив<br>6.main() |  | [XX]() |  |
+| 10 | 1.Library<br>2.Тэги Set<br>3.ISBN Map<br>4.Map<Genre, List><br>5.Полки-массив<br>6.main() | ✓ | [11](https://github.com/gruqo/library/pull/11) |  |
 | 11 | 1.Предикаты/фильтры<br>2.filterIsInstance<br>3.Группировка<br>4.fold<br>5.Comparable<br>6.ArrayDeque |  | [XX]() |  |
 | 12 | 1.Функции как параметры<br>2.Function references<br>3.Scope‑функции — каждая по разу<br>4.Чистый scope‑function кейс: ?.let<br>5.Высшего порядка: «передать что делать» |  | [XX]() |  |
 | 13 | 1.Иерархия доменных исключений<br>2.Использование исключений в Library<br>3.require для валидации в cleanIsbn<br>4.try как выражение<br>5.use для ресурсов<br>6.Демонстрация в main() |  | [XX]() |  |
