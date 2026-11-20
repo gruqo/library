@@ -30,7 +30,7 @@ class Library(val name: String, rows: Int = 5, cols: Int = 10) {
         return removed
     }
     val size: Int get() = books.size
-    fun all(): List<Book> = books.toList() // возвращаем КОПИЮ как read-only
+    fun all(): List<Book> = books.toList()
     override fun toString(): String = "Библиотека «$name» ($size книг)"
 
     fun byGenre(): Map<Genre, List<Book>> = books.groupBy { it.genre }
@@ -82,7 +82,7 @@ class Library(val name: String, rows: Int = 5, cols: Int = 10) {
             .sortedByDescending { it.second }
             .take(n)
 
-    fun totalCatalogValue1(): Double =
+    fun totalCatalogValue(): Double =
         books.fold(0.0) { acc, book -> acc + book.price.amount * book.copiesInStock }
 
     fun totalCatalogValue2(): Double =
