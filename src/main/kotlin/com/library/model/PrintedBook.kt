@@ -27,7 +27,9 @@ class PrintedBook(
     translator = translator,
     genre = genre,
     tags = tags
-) {
+), Comparable<PrintedBook> {
+    override fun compareTo(other: PrintedBook): Int = pages.compareTo(other.pages)
+
     override val category = "Печатная книга"
 
     init {

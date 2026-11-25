@@ -1,13 +1,9 @@
 package com.library
 
-import com.library.model.EBook
-import com.library.model.Genre
-import com.library.model.Library
-import com.library.model.Money
-import com.library.model.PrintedBook
+import com.library.model.*
 
 fun main() {
-    val lib = Library("Городская библиотека №1", rows = 3, cols = 5)
+    val library = Library("Городская библиотека №1", rows = 3, cols = 5)
 
     val cleanCode = PrintedBook(
         "Чистый код",
@@ -44,20 +40,79 @@ fun main() {
         tags = setOf("classic", "russian")
     )
 
-    lib.addBook(cleanCode)
-    lib.addBook(kotlinAction)
-    lib.addBook(warAndPeace)
+    val harryPotter = AudioBook(
+        "Гарри Поттер",
+        "Дж. Роулинг",
+        1997,
+        Money(599.0),
+        initialCopies = 2,
+        durationMinutes = 480,
+        narrator = "С. Чонишвили",
+        genre = Genre.FICTION
+    )
 
-    println(lib)
-    println("Всего: ${lib.size}")
-    println("По ISBN 9785916719892: ${lib.findByIsbn("9785916719892")?.title}")
+    listOf(cleanCode, kotlinAction, warAndPeace, harryPotter).forEach { library.addBook(it) }
 
-    lib.place(cleanCode, 0, 0)
-    lib.place(warAndPeace, 0, 1)
-    lib.printShelves()
+    library.place(cleanCode, 0, 0)
+    library.place(warAndPeace, 0, 1)
+    library.printShelves()
 
-    println("\nПо жанрам:")
-    for ((genre, list) in lib.byGenre()) {
+    repeat(3) { cleanCode.lend() }
+    warAndPeace.lend()
+
+    println("\n--- Статистика ---")
+    println("Средняя цена: ${library.averagePrice()}")
+    println("Есть доступные книги: ${library.hasAvailable()}")
+    println("Недоступных книг: ${library.unavailableCount()}")
+
+    println("\n--- Электронные книги ---")
+    for (ebook in library.ebooks()) {
+        println("  ${ebook.title} (${ebook.format}, ${ebook.sizeMb} МБ)")
+    }
+
+    println("\n--- Аудиокниги ---")
+    for (audio in library.audioBooks()) {
+        println("  ${audio.title} (${audio.durationMinutes} мин, ${audio.narrator})")
+    }
+    println("Общая длительность аудиокниг: ${library.totalAudioMinutes()} мин")
+
+    println("\n--- Каталог по жанрам ---")
+    for ((genre, list) in library.byGenre()) {
         println("${genre.displayName}: ${list.joinToString { it.title }}")
     }
+
+    println("\n--- Счётчик по жанрам ---")
+    println("  groupBy + mapValues:  ${library.countByGenre().mapKeys { it.key.displayName }}")
+    println("  groupingBy + eachCount: ${library.countByGenre2().mapKeys { it.key.displayName }}")
+
+    println("\n--- Топ по выдачам ---")
+    for (book in library.topByLoans(3)) {
+        println("  ${book.title} (${book.totalLoans} выдач)")
+    }
+
+    println("\n--- Самые толстые ---")
+    for (book in library.topThickest(3)) {
+        println("  ${book.title} (${book.pages} стр.)")
+    }
+
+    println("\n--- Топ авторов ---")
+    for ((author, count) in library.topAuthors(3)) {
+        println("  $author — $count книг")
+    }
+
+    println("\n--- Comparable: PrintedBook по страницам ---")
+    val printed = library.allPrintedBooks()
+    println("  Самая тонкая:  ${printed.minOrNull()?.title}")
+    println("  Самая толстая: ${printed.maxOrNull()?.title}")
+    for (book in printed.sorted()) {
+        println("    ${book.title} — ${book.pages} стр.")
+    }
+
+    println("\n--- Очередь резервирования ---")
+    library.reserve("Аня", cleanCode)
+    library.reserve("Боря", cleanCode)
+    println("Очередь: ${library.queueSize()}")
+    val next = library.nextReservation()
+    println("Следующий — ${next?.first} получит «${next?.second?.title}»")
+    println("В очереди осталось: ${library.queueSize()}")
 }
