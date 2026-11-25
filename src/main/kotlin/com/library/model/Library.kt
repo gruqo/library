@@ -1,10 +1,11 @@
 package com.library.model
 
-class Library(val name: String, rows: Int = 5, cols: Int = 5) {
+class Library(val name: String, rows: Int = 5, cols: Int = 10) {
     private val books: MutableList<Book> = mutableListOf()
     private val byIsbn = mutableMapOf<String, Book>()
 
     private val reservationQueue: ArrayDeque<Pair<String, Book>> = ArrayDeque()
+
     fun reserve(userName: String, book: Book) {
         reservationQueue.addLast(userName to book)
         println("$userName поставлен в очередь на «${book.title}»")
@@ -12,23 +13,25 @@ class Library(val name: String, rows: Int = 5, cols: Int = 5) {
     fun nextReservation(): Pair<String, Book>? = reservationQueue.removeFirstOrNull()
     fun queueSize(): Int = reservationQueue.size
 
-
     fun addBook(book: Book) {
-        books.add(book)
         book.isbn?.let { isbn ->
             require(isbn !in byIsbn) { "Книга с ISBN $isbn уже есть в каталоге" }
             byIsbn[isbn] = book
         }
+        books.add(book)
     }
 
     fun findByIsbn(isbn: String): Book? = byIsbn[isbn]
     fun hasIsbn(isbn: String): Boolean = isbn in byIsbn
 
-    fun removeBook(book: Book): Boolean = books.remove(book)
+    fun removeBook(book: Book): Boolean {
+        val removed = books.remove(book)
+        if (removed) book.isbn?.let { byIsbn.remove(it) }
+        return removed
+    }
     val size: Int get() = books.size
-    fun all(): List<Book> = books.toList() // возвращаем КОПИЮ как read-only
+    fun all(): List<Book> = books.toList()
     override fun toString(): String = "Библиотека «$name» ($size книг)"
-
 
     fun byGenre(): Map<Genre, List<Book>> = books.groupBy { it.genre }
     fun countByGenre(): Map<Genre, Int> = books.groupBy { it.genre }.mapValues { (_, list) -> list.size }
@@ -81,7 +84,7 @@ class Library(val name: String, rows: Int = 5, cols: Int = 5) {
             .sortedByDescending { it.second }
             .take(n)
 
-    fun totalCatalogValue1(): Double =
+    fun totalCatalogValue(): Double =
         books.fold(0.0) { acc, book -> acc + book.price.amount * book.copiesInStock }
 
     fun totalCatalogValue2(): Double =
@@ -96,5 +99,4 @@ class Library(val name: String, rows: Int = 5, cols: Int = 5) {
     }
 
     fun <R> mapBooks(transform: (Book) -> R): List<R> = books.map(transform)
-
 }
