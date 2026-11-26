@@ -52,7 +52,9 @@ class Library(val name: String, rows: Int = 5, cols: Int = 10) {
         }
     }
 
-    fun totalCopies(): Int = books.sumOf { it.copiesInStock }
+    fun totalCopies(): Int = books
+        .filter { it.copiesInStock != Int.MAX_VALUE }
+        .sumOf { it.copiesInStock }
 
     fun averagePrice(): Double =
         if (books.isEmpty()) 0.0
@@ -89,4 +91,12 @@ class Library(val name: String, rows: Int = 5, cols: Int = 10) {
         books.sumOf { it.price.amount * it.copiesInStock }
 
     fun allPrintedBooks(): List<PrintedBook> = books.filterIsInstance<PrintedBook>()
+
+    fun search(predicate: (Book) -> Boolean): List<Book> = books.filter(predicate)
+
+    fun forEachBook(action: (Book) -> Unit) {
+        books.forEach(action)
+    }
+
+    fun <R> mapBooks(transform: (Book) -> R): List<R> = books.map(transform)
 }
