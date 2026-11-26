@@ -27,6 +27,7 @@ fun pageCategorize(pages: Int): String = when {
     else -> "Толщина не определена"
 }
 
+// ========== ISBN ==========
 fun cleanIsbn(rawIsbn: String): String = rawIsbn.replace("-", "").replace(" ", "")
 
 fun digitsSum(n: Long): Int =

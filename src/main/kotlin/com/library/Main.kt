@@ -1,7 +1,8 @@
 package com.library
 
 import com.library.model.*
-import com.library.util.*
+import com.library.util.cleanIsbn
+import com.library.util.isValidIsbn
 
 fun main() {
     val library = Library("Городская библиотека №1", rows = 3, cols = 5)
@@ -117,75 +118,83 @@ fun main() {
     println("Следующий — ${next?.first} получит «${next?.second?.title}»")
     println("В очереди осталось: ${library.queueSize()}")
 
-    // --- 12 --- Домашнее задание 1/6
-    //val classics = library.search { it.year < 1950u }
-    //val cheap = library.search { it.price.amount < 500 }
-    //val byAuthor = library.search { it.author == "Л. Толстой" }
-    //val combo = library.search { it.genre == Genre.FICTION && it.year > 2000u }
+    println("\n--- Поиск через search { } ---")
+    println("Классика до 1950 года: ${library.search { it.year < 1950 }.map(Book::title)}")
+    println("Дешевле 500 руб.: ${library.search { it.price.amount < 500 }.map(Book::title)}")
+    println("Книги Л. Толстого: ${library.search { it.author == "Л. Толстой" }.map(Book::title)}")
+    println(
+        "Художественные после 2000 года: " +
+            library.search { it.genre == Genre.FICTION && it.year > 2000 }.map(Book::title)
+    )
 
-    // --- 12 --- Домашнее задание 2/6
-    //val titles = library.all().map(Book::title)
-    //println("Все названия: $titles")
+    println("\n--- Function references ---")
+    val titles = library.all().map(Book::title)
+    println("Все названия: $titles")
 
-    //val available = library.all().filter(Book::isAvailable)
-    //println("Доступные: ${available.size}")
+    val available = library.all().filter(Book::isAvailable)
+    println("Доступные книги: ${available.map(Book::title)}")
 
-    //val doLend = cleanCode::lend
-    //val result = doLend()
-    //println("Результат lend: $result")
+    val doLend = warAndPeace::lend
+    val lendResult = doLend()
+    println("Результат lend через bound reference: $lendResult")
 
-    // --- 12 --- Домашнее задание 3.1/6
-    //val newBook = PrintedBook("Test", "Тест", 2020, Money(100.0), 1, pages = 100,
-    //    isbn = null, genre = Genre.PROGRAMMING, tags = setOf("test")).apply {
-    //    println("Создана: $title")
-    //}
+    val isPositive: (Int) -> Boolean = { it > 0 }
+    println("Положительных среди [-2, 0, 3, 5]: ${listOf(-2, 0, 3, 5).count(isPositive)}")
 
-    //val book01 = library.findByIsbn("9785916719892")?.let {
-    //  println("Найдена книга: ${it.title}")
-    //}
+    println("\n--- apply: конфигурация при создании ---")
+    val newBook = PrintedBook(
+        "Test",
+        "Тест",
+        2020,
+        Money(100.0),
+        1,
+        pages = 100,
+        isbn = null,
+        genre = Genre.PROGRAMMING,
+        tags = setOf("test")
+    ).apply {
+        println("Создана: $title, автор $author, $pages стр.")
+    }
+    library.addBook(newBook)
 
-    //val book02 = library.findByIsbn("9785916719892")?.run {
-    //    println("Найдена книга: ${this.title}")
-    //}
+    println("\n--- also: side effect при поиске ---")
+    val found = library.findByIsbn("9781617293290")?.also {
+        println("Найдена книга: ${it.title}")
+    }
+    println("also вернул тот же объект: ${found?.title}")
 
-    //val book03 = library.findByIsbn("9785916719892")
-    //val text03 = with(book03) {
-    //    println("Найдена книга: ${this?.title}")
-    //}
+    println("\n--- let: null-safety и преобразование ---")
+    val titleLength: Int? = library.findByIsbn("9781617293290")?.let { it.title.length }
+    println("Длина названия Kotlin in Action: $titleLength")
+    val missingLength: Int? = library.findByIsbn("0000000000000")?.let { it.title.length }
+    println("Длина названия ненайденной книги: $missingLength")
 
-    //val book04 = library.findByIsbn("9785916719892")?.apply {
-    //    println("Найдена книга: ${this.title}")
-    //}
+    println("\n--- run: блок с результатом ---")
+    val description = library.run {
+        val total = totalCopies()
+        val genres = byGenre().size
+        "В библиотеке $total экземпляров, $genres жанров"
+    }
+    println(description)
 
-    //val book05 = library.findByIsbn("9785916719892")?.also {
-    //    println("Найдена книга: ${it.title}")
-    //}
+    println("\n--- with: несколько обращений к одному объекту ---")
+    val cardText = with(library.findByIsbn("9781617293290")) {
+        """
+        ${this?.title}
+        ${this?.author}, ${this?.year}
+        Цена: ${this?.price}
+        """.trimIndent()
+    }
+    println(cardText)
 
-    // --- 12 --- Домашнее задание 3.2/6
-    //val titleLength: Int? = library.findByIsbn("9785916719892")?.let { it.title.length }
-    //val description = library.run {
-    //val total = totalCopies()
-    //val genres = byGenre().size
-    //"В библиотеке $total экземпляров $genres жанров"
-    //}
+    println("\n--- ?.let: чистый null-safety кейс ---")
+    val isbn: String? = "9781617293290"
+    isbn?.let { cleanIsbn(it) }
+        ?.takeIf(::isValidIsbn)
+        ?.let { println("Валидный ISBN: $it") }
 
-    //println(description)
-
-    //val cardText = with(library.findByIsbn("9785916719892")) {
-    //    """
-    //    ${this?.title}
-    //    ${this?.author}, ${this?.year}
-    //    Цена: ${this?.price}
-    //    """.trimIndent()
-    //}
-
-    // --- 12 --- Домашнее задание 4/6
-    //val isbn: String? = "9785916719892"
-    //isbn?.let { isbnClean(it) }
-    //    ?.takeIf(::isbnValidate)
-    //    ?.let { println("Валидный ISBN: $it") }
-
-    // --- 12 --- Домашнее задание 5/6
-    //library.forEachBook { println("- ${it.title} (${it.year})") }
-    //val totalPages = library.mapBooks { (it as? PrintedBook)?.pages?.toInt() ?: 0 }.sum()
+    println("\n--- forEachBook / mapBooks ---")
+    library.forEachBook { println("- ${it.title} (${it.year})") }
+    val totalPages = library.mapBooks { (it as? PrintedBook)?.pages ?: 0 }.sum()
+    println("Всего страниц в печатных книгах: $totalPages")
 }
